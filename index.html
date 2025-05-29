@@ -373,7 +373,7 @@
         const messageModal = document.getElementById('messageModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
-        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        // const modalCloseBtn = document.getElementById('modalCloseBtn'); // Button is now dynamically created
 
         const layersListContainer = document.getElementById('layersList');
         const addLayerBtn = document.getElementById('addLayerBtn');
@@ -438,7 +438,7 @@
 
         function showModal(title, message, customButtons = null, isCustom = false) {
             modalTitle.textContent = title;
-            modalMessage.innerHTML = message; // Use innerHTML for messages with HTML tags
+            modalMessage.innerHTML = message; 
             const buttonContainer = messageModal.querySelector('.modal-button-container');
             buttonContainer.innerHTML = ''; 
             if (isCustom && customButtons && customButtons.length > 0) {
@@ -451,7 +451,7 @@
                 });
             } else {
                 const closeButton = document.createElement('button');
-                closeButton.id = 'modalCloseBtn'; 
+                // closeButton.id = 'modalCloseBtn'; 
                 closeButton.className = 'btn modal-button btn-primary';
                 closeButton.textContent = 'Close';
                 closeButton.onclick = () => closeModal(messageModal);
@@ -461,10 +461,11 @@
         }
 
         function closeModal(modalElement) { modalElement.classList.add('hidden'); }
-        // modalCloseBtn is dynamically created now, so add listener to parent
         messageModal.addEventListener('click', (event) => { 
-            if (event.target === messageModal || event.target.id === 'modalCloseBtn') {
-                closeModal(messageModal);
+            if (event.target === messageModal || event.target.classList.contains('modal-button')) { 
+                if (!event.target.classList.contains('btn-danger') && !event.target.classList.contains('btn-primary') && event.target.textContent !== 'Delete' && event.target.textContent !== 'Clear Layer' && event.target.textContent !== 'Clear All') {
+                     closeModal(messageModal);
+                }
             }
         });
 
@@ -782,11 +783,13 @@
                     if (!stroke.points || stroke.points.length < 1) return;
                     ctx.save(); 
 
-                    if (shakeAmount > 0 && !isExporting) { 
+                    // Shake effect is now ALWAYS applied if shakeAmount > 0
+                    if (shakeAmount > 0) { 
                         const shakeX = (Math.random() - 0.5) * shakeAmount * animSpeed; 
                         const shakeY = (Math.random() - 0.5) * shakeAmount * animSpeed;
                         ctx.translate(shakeX, shakeY);
                     }
+
                     let currentDynamicSize = stroke.originalSize;
                     if (breathAmount > 0) {
                         currentDynamicSize = stroke.originalSize + Math.sin(currentTime * 0.1 * animSpeed + stroke.birthTime) * breathAmount;
@@ -874,15 +877,15 @@
         });
         
         async function initializeFFmpeg() {
-            if (!ffmpeg) { // Initialize FFmpeg instance only once
+            if (!ffmpeg) { 
                  ffmpeg = createFFmpeg({ 
-                    log: true, // Enable FFmpeg logs in console for debugging
+                    log: true, 
                     corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
                  });
             }
             if (!ffmpeg.isLoaded()) {
                 if(loadingText) loadingText.textContent = "Loading FFmpeg library (~30MB)...";
-                loadingIndicator.classList.remove('hidden'); // Show while loading FFmpeg library itself
+                loadingIndicator.classList.remove('hidden'); 
                 await ffmpeg.load();
             }
         }
@@ -907,7 +910,7 @@
             }
 
             try {
-                await initializeFFmpeg(); // Ensure FFmpeg is loaded
+                await initializeFFmpeg(); 
             } catch (err) {
                 console.error("FFmpeg load error:", err);
                 showModal("FFmpeg Load Error", "Failed to load FFmpeg components. MP4 export is unavailable. Error: " + err.message);
@@ -932,7 +935,6 @@
             const globalExportAnimSpeedFactor = parseFloat(animationSliders.animationSpeed.slider.value);
             if (globalExportAnimSpeedFactor <= 0) {
                 showModal("Export Warning", "Global Animation Speed is zero or less. The exported video will not show animation. Please increase the Animation Speed slider value if you want animated export.");
-                // Allow proceeding, will result in a static-like video if speed is 0.
             }
 
             loadingIndicator.classList.remove('hidden');
@@ -965,15 +967,12 @@
                 
                 try {
                     const dataUrl = canvas.toDataURL('image/png');
-                    // FFmpeg's fetchFile can sometimes be slow or have issues with very large data URLs or many files.
-                    // Converting to blob first might be more robust for FFmpeg.
                     const blob = await (await fetch(dataUrl)).blob();
                     const arrayBuffer = await blob.arrayBuffer();
                     ffmpeg.FS('writeFile', frameName, new Uint8Array(arrayBuffer));
                 } catch (frameError) {
                     console.error(`Error processing frame ${frameName}:`, frameError);
                     showModal("Frame Processing Error", `Failed to process frame ${currentFrame + 1}. Export aborted.`);
-                    // Cleanup and restore
                     frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} });
                     loadingIndicator.classList.add('hidden');
                     time = liveAnimationTimeAtStart; 
@@ -1018,26 +1017,22 @@
 
 
         function initializeApp() {
-            // Service Worker Registration
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./sw.js', { scope: './' }) // Ensure scope is correct for GitHub Pages
+                    navigator.serviceWorker.register('./sw.js', { scope: './' }) 
                     .then(registration => {
                         console.log('Drawerz Service Worker: Registered with scope:', registration.scope);
-                        
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
                             if (newWorker) {
                                 newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'activated') {
                                     if (navigator.serviceWorker.controller) {
-                                    console.log('Drawerz Service Worker: New version activated. A reload might be needed for changes to take full effect.');
-                                    // Optionally show a small, non-intrusive "Update available, reload?" message
+                                    console.log('Drawerz Service Worker: New version activated.');
                                     } else {
                                     console.log('Drawerz Service Worker: Activated for the first time. Page may need a reload for COOP/COEP headers.');
-                                    // This is a good place to inform the user if SharedArrayBuffer is still not available
                                     if (typeof SharedArrayBuffer === 'undefined') {
-                                        showModal("Service Worker Active", "The helper Service Worker is now active. Please try reloading the page if MP4 export initially fails due to missing requirements.");
+                                        showModal("Service Worker Active", "The helper Service Worker is now active. Please try reloading the page if MP4 export initially fails due to missing requirements (SharedArrayBuffer).");
                                     }
                                     }
                                 }
@@ -1047,7 +1042,6 @@
                     }).catch(error => {
                         console.error('Drawerz Service Worker: Registration failed:', error);
                     });
-
                     navigator.serviceWorker.addEventListener('message', event => {
                         if (event.data && event.data.type === 'SW_ACTIVATED') {
                             console.log('Drawerz Service Worker: Received SW_ACTIVATED message from SW.');
@@ -1056,8 +1050,6 @@
                             }
                         }
                     });
-
-                    // Initial check on load if controlled by SW but SAB is missing
                     if (navigator.serviceWorker.controller && typeof SharedArrayBuffer === 'undefined') {
                         console.warn('Page is controlled by a Service Worker, but SharedArrayBuffer is undefined. Ensure SW sets COOP/COEP headers, or try a hard refresh (Ctrl+Shift+R).');
                     }
