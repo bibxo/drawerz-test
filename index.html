@@ -398,6 +398,10 @@
         let undoStack = [];
         let redoStack = [];
 
+        // Define fixed export resolution
+        const EXPORT_WIDTH = 1280;
+        const EXPORT_HEIGHT = 720;
+
         function generateLayerId() { return Date.now() + Math.random().toString(36).substr(2, 9); }
         function getActiveLayer() { return layers.find(layer => layer.id === activeLayerId); }
 
@@ -451,7 +455,6 @@
                 });
             } else {
                 const closeButton = document.createElement('button');
-                // closeButton.id = 'modalCloseBtn'; 
                 closeButton.className = 'btn modal-button btn-primary';
                 closeButton.textContent = 'Close';
                 closeButton.onclick = () => closeModal(messageModal);
@@ -767,12 +770,20 @@
 
         function drawScene(isExporting = false, exportTimeOverride = null) {
             const currentTime = isExporting ? exportTimeOverride : time;
+            const targetCtx = isExporting ? ctx : ctx; // For now, always draw on main canvas's context
+                                                      // If using offscreen for export, this would change.
+            const targetWidth = isExporting ? EXPORT_WIDTH : canvas.width;
+            const targetHeight = isExporting ? EXPORT_HEIGHT : canvas.height;
 
-            ctx.fillStyle = '#FFFFFF'; 
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // If exporting, we are drawing on the main canvas but it's temporarily resized.
+            // Clear the (potentially resized) main canvas.
+            targetCtx.fillStyle = '#FFFFFF'; 
+            targetCtx.fillRect(0, 0, targetWidth, targetHeight);
+
             layers.forEach(layer => {
                 if (!layer.isVisible || layer.strokes.length === 0) return;
-                ctx.save(); ctx.globalAlpha = layer.opacity; 
+                targetCtx.save(); 
+                targetCtx.globalAlpha = layer.opacity; 
                 const animSettings = layer.animationSettings;
                 const animSpeed = parseFloat(animSettings.animationSpeed); 
                 const wiggleAmp = parseFloat(animSettings.wiggleIntensity);
@@ -781,13 +792,12 @@
 
                 layer.strokes.forEach(stroke => {
                     if (!stroke.points || stroke.points.length < 1) return;
-                    ctx.save(); 
+                    targetCtx.save(); 
 
-                    // Shake effect is now ALWAYS applied if shakeAmount > 0
-                    if (shakeAmount > 0) { 
+                    if (shakeAmount > 0) { // Shake effect is always applied if amount > 0
                         const shakeX = (Math.random() - 0.5) * shakeAmount * animSpeed; 
                         const shakeY = (Math.random() - 0.5) * shakeAmount * animSpeed;
-                        ctx.translate(shakeX, shakeY);
+                        targetCtx.translate(shakeX, shakeY);
                     }
 
                     let currentDynamicSize = stroke.originalSize;
@@ -795,11 +805,12 @@
                         currentDynamicSize = stroke.originalSize + Math.sin(currentTime * 0.1 * animSpeed + stroke.birthTime) * breathAmount;
                         currentDynamicSize = Math.max(1, currentDynamicSize);
                     }
-                    ctx.beginPath();
+                    targetCtx.beginPath();
                     if (stroke.points.length === 1) { 
                         const p = stroke.points[0];
-                        ctx.arc(p.x, p.y, currentDynamicSize / 2, 0, Math.PI * 2);
-                        ctx.fillStyle = stroke.tool === 'eraser' ? '#FFFFFF' : stroke.color; ctx.fill();
+                        targetCtx.arc(p.x, p.y, currentDynamicSize / 2, 0, Math.PI * 2);
+                        targetCtx.fillStyle = stroke.tool === 'eraser' ? '#FFFFFF' : stroke.color; 
+                        targetCtx.fill();
                     } else { 
                         for (let i = 0; i < stroke.points.length; i++) {
                             let p = { ...stroke.points[i] }; 
@@ -809,16 +820,17 @@
                                 const wiggleOffset = Math.sin(currentTime * 0.1 * animSpeed + i * 0.5 + stroke.birthTime * 0.01) * wiggleAmp;
                                 p.x += Math.cos(normalAngle) * wiggleOffset; p.y += Math.sin(normalAngle) * wiggleOffset;
                             }
-                            if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+                            if (i === 0) targetCtx.moveTo(p.x, p.y); else targetCtx.lineTo(p.x, p.y);
                         }
              
-                        ctx.strokeStyle = stroke.tool === 'eraser' ? '#FFFFFF' : stroke.color;
-                        ctx.lineWidth = currentDynamicSize;
-                        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+                        targetCtx.strokeStyle = stroke.tool === 'eraser' ? '#FFFFFF' : stroke.color;
+                        targetCtx.lineWidth = currentDynamicSize;
+                        targetCtx.lineCap = 'round'; targetCtx.lineJoin = 'round'; 
+                        targetCtx.stroke();
                     }
-                    ctx.restore(); 
+                    targetCtx.restore(); 
                 });
-                ctx.restore(); 
+                targetCtx.restore(); 
             });
         }
 
@@ -953,6 +965,15 @@
             let currentFrame = 0;
             const frameFileNames = [];
 
+            // Store original canvas dimensions
+            const originalCanvasWidth = canvas.width;
+            const originalCanvasHeight = canvas.height;
+
+            // Temporarily resize canvas for export
+            canvas.width = EXPORT_WIDTH;
+            canvas.height = EXPORT_HEIGHT;
+
+
             async function renderAndSaveFrame() {
                 if (currentFrame >= totalFrames) {
                     await compileVideo();
@@ -960,6 +981,11 @@
                 }
                 if(loadingText) loadingText.textContent = `Rendering frame ${currentFrame + 1} of ${totalFrames}...`;
                 
+                // Ensure canvas is at export resolution FOR THIS FRAME's DRAWING
+                if(canvas.width !== EXPORT_WIDTH || canvas.height !== EXPORT_HEIGHT) {
+                    canvas.width = EXPORT_WIDTH;
+                    canvas.height = EXPORT_HEIGHT;
+                }
                 drawScene(true, exportRenderTime); 
 
                 const frameName = `frame${String(currentFrame).padStart(4, '0')}.png`;
@@ -973,13 +999,15 @@
                 } catch (frameError) {
                     console.error(`Error processing frame ${frameName}:`, frameError);
                     showModal("Frame Processing Error", `Failed to process frame ${currentFrame + 1}. Export aborted.`);
+                    // Cleanup before aborting
                     frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} });
+                    canvas.width = originalCanvasWidth; // Restore canvas size
+                    canvas.height = originalCanvasHeight;
                     loadingIndicator.classList.add('hidden');
                     time = liveAnimationTimeAtStart; 
-                    animate();
+                    animate(); // Restart live animation
                     return;
                 }
-
 
                 exportRenderTime += timeStepPerVideoFrame;
                 currentFrame++;
@@ -989,7 +1017,8 @@
             async function compileVideo() {
                 if(loadingText) loadingText.textContent = "Encoding MP4... This may take a while.";
                 try {
-                    await ffmpeg.run('-r', String(frameRate), '-i', 'frame%04d.png', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-pix_fmt', 'yuv420p', 'output.mp4');
+                    // Changed CRF to 20 and preset to medium for better quality
+                    await ffmpeg.run('-r', String(frameRate), '-i', 'frame%04d.png', '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', 'output.mp4');
                     const data = ffmpeg.FS('readFile', 'output.mp4');
                     
                     const blob = new Blob([data.buffer], { type: 'video/mp4' });
@@ -1007,9 +1036,16 @@
                     frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} });
                     try { ffmpeg.FS('unlink', 'output.mp4'); } catch(e){}
                     
+                    // Restore original canvas size
+                    canvas.width = originalCanvasWidth;
+                    canvas.height = originalCanvasHeight;
+                    // It's good to redraw the scene on the original canvas once after export
+                    drawScene(false, liveAnimationTimeAtStart); 
+
+
                     loadingIndicator.classList.add('hidden');
                     time = liveAnimationTimeAtStart; 
-                    animate(); 
+                    animate(); // Restart live animation
                 }
             }
             renderAndSaveFrame(); 
