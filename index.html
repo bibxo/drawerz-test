@@ -14,7 +14,7 @@
     <meta property="og:title" content="Drawerz Beta 3 - Animated Sketchpad">
     <meta property="og:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-drawerz-beta-3-url.com/"> <meta property="og:image" content="chat-logo.png"> 
+    <meta property="og:url" content="https://your-drawerz-beta-3-url.com/"> <meta property="og:image" content="https://placehold.co/1200x630/1F2937/E5E7EB?text=Drawerz+Chat+Logo&font=montserrat"> 
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Drawerz Beta 3">
@@ -22,7 +22,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Drawerz Beta 3 - Animated Sketchpad">
     <meta name="twitter:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
-    <meta name="twitter:image" content="chat-logo.png"> 
+    <meta name="twitter:image" content="https://placehold.co/1200x630/1F2937/E5E7EB?text=Drawerz+Chat+Logo&font=montserrat">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
@@ -56,14 +56,14 @@
             z-index: 20; 
         }
 
-        .header-logo-link { /* For the logo image to be clickable (e.g., to homepage) */
-            display: inline-block; /* Allows setting height/width if needed on the link itself */
+        .header-logo-link { 
+            display: inline-block; 
         }
         .header-logo {
-            height: 32px; /* Adjust as needed, e.g., 30-40px */
-            width: auto;  /* Maintain aspect ratio */
-            object-fit: contain; /* Ensures logo isn't distorted */
-            vertical-align: middle; /* Aligns image nicely if there's text next to it */
+            height: 32px; 
+            width: auto;  
+            object-fit: contain; 
+            vertical-align: middle; 
         }
 
 
@@ -110,7 +110,7 @@
             max-width: 100%;
             max-height: 100%;
             border: 1px solid #4b5563; 
-            transform-origin: 0 0; 
+            /* No transform-origin needed if we scale within drawScene */
         }
 
 
@@ -141,7 +141,7 @@
             font-family: 'Montserrat', sans-serif;
         }
 
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 0.5rem; } 
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 0.5rem; } 
 
         .btn {
             display: inline-flex; 
@@ -306,9 +306,7 @@
                 <div class="tools-grid">
                     <button id="penTool" class="btn active-tool" title="Pen Tool (P)"><i class="fas fa-pen"></i> Pen</button>
                     <button id="eraserTool" class="btn" title="Eraser Tool (E)"><i class="fas fa-eraser"></i> Eraser</button>
-                    <button id="handTool" class="btn" title="Pan Tool (H)"><i class="fas fa-hand-paper"></i> Pan</button>
-                    <button id="resetViewBtn" class="btn" title="Reset View (R)"><i class="fas fa-search-plus"></i> Reset View</button>
-                </div>
+                    </div>
                 <div class="form-group">
                     <label for="strokeSize" class="form-label">Stroke Size: <span id="strokeSizeValue">10</span>px</label>
                     <input type="range" id="strokeSize" min="1" max="100" value="10">
@@ -382,8 +380,10 @@
         const ctx = canvas.getContext('2d');
         const penToolBtn = document.getElementById('penTool');
         const eraserToolBtn = document.getElementById('eraserTool');
-        const handToolBtn = document.getElementById('handTool');
-        const resetViewBtn = document.getElementById('resetViewBtn');
+        // Hand tool and reset view buttons removed
+        // const handToolBtn = document.getElementById('handTool');
+        // const resetViewBtn = document.getElementById('resetViewBtn');
+
 
         const strokeSizeSlider = document.getElementById('strokeSize');
         const strokeSizeValue = document.getElementById('strokeSizeValue');
@@ -419,7 +419,7 @@
         const controlPanelToggle = document.getElementById('controlPanelToggle');
 
         let isDrawing = false;
-        let currentTool = 'pen'; // 'pen', 'eraser', 'hand'
+        let currentTool = 'pen'; 
         let currentStrokeSize = 10;
         let currentStrokeColor = '#000000';
         
@@ -435,15 +435,11 @@
         const WORLD_WIDTH = 1920;
         const WORLD_HEIGHT = 1080;
 
-        let viewTransform = {
-            scale: 1,
-            offsetX: 0, 
-            offsetY: 0  
-        };
-        let isPanning = false;
-        let panStartX, panStartY;
-        const MIN_ZOOM = 0.1;
-        const MAX_ZOOM = 10;
+        // This will store the scale to fit WORLD into on-screen canvas
+        let displayScale = 1; 
+        let displayOffsetX = 0;
+        let displayOffsetY = 0;
+
 
         const EXPORT_WIDTH = 1920; 
         const EXPORT_HEIGHT = 1080; 
@@ -452,13 +448,14 @@
         function getActiveLayer() { return layers.find(layer => layer.id === activeLayerId); }
 
         function setActiveToolButton(activeBtn) {
-            [penToolBtn, eraserToolBtn, handToolBtn].forEach(btn => btn.classList.remove('active-tool'));
+            [penToolBtn, eraserToolBtn].forEach(btn => btn.classList.remove('active-tool')); // Removed handToolBtn
             if (activeBtn) activeBtn.classList.add('active-tool');
             updateCanvasCursor(); 
         }
         
         function updateCanvasCursor() {
-            const size = Math.max(2, currentStrokeSize * viewTransform.scale); 
+            // Cursor size is now based on currentStrokeSize directly, as viewTransform.scale is gone for on-screen display logic
+            const size = Math.max(2, currentStrokeSize); 
             let cursorSVG;
             if (currentTool === 'pen') {
                 cursorSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2}" fill="rgba(0,0,0,0.5)"/></svg>`;
@@ -467,15 +464,14 @@
                 const outlineWidth = Math.max(1, Math.min(2, size / 10)); 
                 cursorSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2 - outlineWidth/2}" fill="rgba(255,255,255,0.5)" stroke="rgba(0,0,0,0.7)" stroke-width="${outlineWidth}"/></svg>`;
                 canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(cursorSVG)}') ${size/2} ${size/2}, auto`;
-            } else if (currentTool === 'hand') {
-                canvas.style.cursor = isPanning ? 'grabbing' : 'grab';
-            } else {
+            } else { // Removed 'hand' tool case
                 canvas.style.cursor = 'default';
             }
         }
 
         function saveStateForUndo() {
-            const state = { layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } };
+            // Removed viewTransform from undo state as it's no longer interactive
+            const state = { layers: JSON.parse(JSON.stringify(layers)) };
             undoStack.push(state);
             if (undoStack.length > 30) undoStack.shift();
             redoStack = []; 
@@ -521,30 +517,27 @@
             }
         });
 
-        function setDefaultViewTransform() {
-            const scaleX = canvas.width / WORLD_WIDTH;
-            const scaleY = canvas.height / WORLD_HEIGHT;
-            viewTransform.scale = Math.min(scaleX, scaleY); 
-
-            viewTransform.offsetX = (canvas.width - WORLD_WIDTH * viewTransform.scale) / 2;
-            viewTransform.offsetY = (canvas.height - WORLD_HEIGHT * viewTransform.scale) / 2;
-        }
-
 
         function resizeCanvas() {
             const canvasContainer = canvas.parentElement;
             const style = getComputedStyle(canvasContainer);
             const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
             const paddingY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-            const containerWidth = canvasContainer.clientWidth - paddingX;
-            const containerHeight = canvasContainer.clientHeight - paddingY;
+            const availableWidth = canvasContainer.clientWidth - paddingX;
+            const availableHeight = canvasContainer.clientHeight - paddingY;
             
-            canvas.width = Math.max(10, containerWidth); 
-            canvas.height = Math.max(10, containerHeight);
+            canvas.width = Math.max(10, availableWidth); 
+            canvas.height = Math.max(10, availableHeight);
             
-            if (viewTransform.scale === 1 && viewTransform.offsetX === 0 && viewTransform.offsetY === 0 && layers.length > 0) {
-                 setDefaultViewTransform();
-            }
+            // Calculate scale to fit WORLD_WIDTH x WORLD_HEIGHT into canvas.width x canvas.height
+            const scaleX = canvas.width / WORLD_WIDTH;
+            const scaleY = canvas.height / WORLD_HEIGHT;
+            displayScale = Math.min(scaleX, scaleY);
+
+            // Calculate offsets to center the scaled world in the canvas
+            displayOffsetX = (canvas.width - WORLD_WIDTH * displayScale) / 2;
+            displayOffsetY = (canvas.height - WORLD_HEIGHT * displayScale) / 2;
+
             drawScene(); 
         }
         window.addEventListener('resize', resizeCanvas);
@@ -705,8 +698,9 @@
             });
         });
         
-        // --- Canvas View Transformation ---
-        function getCanvasMousePos(e) { // Gets mouse/touch relative to canvas element
+        // --- Canvas View Transformation REMOVED ---
+        // getTransformedMousePos is now simplified
+        function getCanvasMousePos(e) { // Gets mouse/touch relative to on-screen canvas element
             const rect = canvas.getBoundingClientRect();
             let clientX, clientY;
             if (e.touches && e.touches.length > 0) {
@@ -719,129 +713,44 @@
             return { x: clientX - rect.left, y: clientY - rect.top };
         }
 
-        function getTransformedMousePos(e) { // Converts screen/canvas pos to world pos
+        function getMousePos(e) { // Converts on-screen canvas pos to world pos
             const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
+            // Scale up from on-screen canvas coordinates to world coordinates
             return {
-                x: (canvasX - viewTransform.offsetX) / viewTransform.scale,
-                y: (canvasY - viewTransform.offsetY) / viewTransform.scale
+                x: (canvasX - displayOffsetX) / displayScale,
+                y: (canvasY - displayOffsetY) / displayScale
             };
         }
 
-        canvas.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            saveStateForUndo(); 
-
-            const { x: mouseX, y: mouseY } = getCanvasMousePos(e); // Mouse pos relative to canvas element
-
-            const zoomIntensity = 0.1;
-            const delta = e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
-            const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewTransform.scale * (1 + delta)));
-
-            // Adjust offset to zoom towards the mouse point
-            viewTransform.offsetX = mouseX - (mouseX - viewTransform.offsetX) * (newScale / viewTransform.scale);
-            viewTransform.offsetY = mouseY - (mouseY - viewTransform.offsetY) * (newScale / viewTransform.scale);
-            viewTransform.scale = newScale;
-            
-            updateCanvasCursor(); // Cursor size might change with zoom
-            drawScene();
-        }, { passive: false });
-
-        let lastPinchDist = null;
-        canvas.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) { 
-                e.preventDefault();
-                isPanning = false; 
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                lastPinchDist = Math.sqrt(dx * dx + dy * dy);
-                saveStateForUndo(); 
-            } else if (e.touches.length === 1 && currentTool === 'hand') {
-                isPanning = true;
-                const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
-                panStartX = canvasX - viewTransform.offsetX;
-                panStartY = canvasY - viewTransform.offsetY;
-                canvas.style.cursor = 'grabbing';
-                saveStateForUndo();
-            } else if (e.touches.length === 1 && (currentTool === 'pen' || currentTool === 'eraser')) {
-                 startDrawing(e); // Allow drawing to start on touch
-            }
-        }, { passive: false });
-
-        canvas.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && lastPinchDist !== null) {
-                e.preventDefault();
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const currentPinchDist = Math.sqrt(dx * dx + dy * dy);
-                const scaleChange = currentPinchDist / lastPinchDist;
-                
-                const { x: pinchCenterX, y: pinchCenterY } = getCanvasMousePos({ 
-                    clientX: (e.touches[0].clientX + e.touches[1].clientX) / 2, 
-                    clientY: (e.touches[0].clientY + e.touches[1].clientY) / 2 
-                });
-
-                const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewTransform.scale * scaleChange));
-                viewTransform.offsetX = pinchCenterX - (pinchCenterX - viewTransform.offsetX) * (newScale / viewTransform.scale);
-                viewTransform.offsetY = pinchCenterY - (pinchCenterY - viewTransform.offsetY) * (newScale / viewTransform.scale);
-                viewTransform.scale = newScale;
-                lastPinchDist = currentPinchDist;
-                updateCanvasCursor(); drawScene();
-            } else if (e.touches.length === 1 && currentTool === 'hand' && isPanning) {
-                e.preventDefault();
-                const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
-                viewTransform.offsetX = canvasX - panStartX;
-                viewTransform.offsetY = canvasY - panStartY;
-                drawScene();
-            } else if (e.touches.length === 1 && isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) {
-                draw(e); // Allow drawing to continue on touch
-            }
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) lastPinchDist = null;
-            if (e.touches.length < 1 && currentTool === 'hand' && isPanning) {
-                isPanning = false;
-                canvas.style.cursor = 'grab';
-            }
-             if (e.touches.length < 1 && isDrawing) { // If drawing was active
-                stopDrawing();
-            }
-        });
+        // Zoom and Pan event listeners REMOVED
+        // resetViewBtn functionality REMOVED (or could be repurposed to reset drawing if needed)
 
 
-        resetViewBtn.addEventListener('click', () => {
-            saveStateForUndo();
-            setDefaultViewTransform();
-            updateCanvasCursor(); 
-            drawScene();
-        });
-
-
-        // --- Drawing Logic (Layer-aware & View Transformed) ---
+        // --- Drawing Logic (Layer-aware & World Coords) ---
         function startDrawing(e) {
-            // console.log("startDrawing called. Tool:", currentTool);
+            console.log("Attempting startDrawing. Tool:", currentTool); // DIAGNOSTIC
             if (currentTool !== 'pen' && currentTool !== 'eraser') {
-                // console.log("startDrawing: Not pen or eraser tool.");
+                console.log("startDrawing: Tool is not pen or eraser. Current tool:", currentTool); // DIAGNOSTIC
                 return;
             }
             const activeLayer = getActiveLayer();
             if (!activeLayer) { 
-                // console.error("startDrawing: No active layer!"); 
+                console.error("startDrawing Error: No active layer found!"); // DIAGNOSTIC
                 return; 
             }
             if (!activeLayer.isVisible) {
-                // console.log("startDrawing: Active layer is not visible.");
+                console.log("startDrawing: Active layer '"+activeLayer.name+"' is not visible."); // DIAGNOSTIC
                 return;
             }
             if (e.button !== 0 && e.type === 'mousedown') {
-                // console.log("startDrawing: Not main mouse button.");
-                return; // Only main mouse button
+                console.log("startDrawing: Not main mouse button."); // DIAGNOSTIC
+                return; 
             }
             
             saveStateForUndo(); 
             isDrawing = true;
-            const { x, y } = getTransformedMousePos(e); 
-            // console.log(`startDrawing: Starting at world coords (${x.toFixed(2)}, ${y.toFixed(2)}) on layer ${activeLayer.name}`);
+            const { x, y } = getMousePos(e); // Uses world coordinates
+            console.log(`startDrawing: Event at screen (${e.clientX}, ${e.clientY}), transformed to world (${x.toFixed(2)}, ${y.toFixed(2)}) on layer ${activeLayer.name}`); // DIAGNOSTIC
             
             if (currentTool === 'pen') {
                 activeLayer.strokes.push({
@@ -853,13 +762,11 @@
                     originalSize: currentStrokeSize,
                     birthTime: time, 
                 });
-                // console.log("startDrawing: Pen stroke added to layer:", activeLayer.strokes[activeLayer.strokes.length -1]);
+                console.log("startDrawing: Pen stroke added. Total strokes on layer:", activeLayer.strokes.length); // DIAGNOSTIC
             }
-            // For eraser, we just need to set the starting point for path checking during the 'draw' (mousemove/touchmove) event.
             lastX = x; lastY = y; 
         }
 
-        // Helper for eraser: point in circle check
         function isPointInCircle(px, py, cx, cy, radius) {
             const dx = px - cx;
             const dy = py - cy;
@@ -868,19 +775,16 @@
 
 
         function draw(e) {
-            // console.log("draw called. isDrawing:", isDrawing, "Tool:", currentTool);
             const activeLayer = getActiveLayer();
             if (!isDrawing || !activeLayer || !activeLayer.isVisible) {
-                // if(!isDrawing) console.log("draw: Not drawing.");
-                // if(!activeLayer) console.error("draw: No active layer!");
-                // if(activeLayer && !activeLayer.isVisible) console.log("draw: Active layer not visible.");
                 return;
             }
+            // console.log("Attempting draw. Tool:", currentTool); // DIAGNOSTIC (verbose)
 
-            const { x, y } = getTransformedMousePos(e); 
+            const { x, y } = getMousePos(e); // World coordinates
 
             if (currentTool === 'eraser') {
-                // console.log(`Eraser at world coords (${x.toFixed(2)}, ${y.toFixed(2)})`);
+                // console.log(`Eraser at world coords (${x.toFixed(2)}, ${y.toFixed(2)})`); // DIAGNOSTIC (verbose)
                 const eraserRadiusWorld = currentStrokeSize / 2; 
                 let erasedSomething = false;
                 for (let i = activeLayer.strokes.length - 1; i >= 0; i--) {
@@ -894,14 +798,14 @@
                             }
                         }
                         if (hit) {
-                            // console.log("Eraser hit stroke:", stroke.id);
+                            // console.log("Eraser hit stroke:", stroke.id); // DIAGNOSTIC (verbose)
                             activeLayer.strokes.splice(i, 1); 
                             erasedSomething = true;
                         }
                     }
                 }
                 if (erasedSomething) {
-                    // console.log("Eraser removed strokes, redrawing scene.");
+                    // console.log("Eraser removed strokes, redrawing scene."); // DIAGNOSTIC (verbose)
                     drawScene(); 
                 }
                 lastX = x; lastY = y; 
@@ -909,24 +813,25 @@
             } else if (currentTool === 'pen') {
                 const currentPath = activeLayer.strokes[activeLayer.strokes.length - 1];
                 if (!currentPath || currentPath.tool !== 'pen') { 
-                    // console.error("draw (pen): No current path or path is not a pen stroke.");
+                    console.error("draw (pen) Error: No current path or path is not a pen stroke for active layer."); // DIAGNOSTIC
                     isDrawing = false; 
                     return; 
                 }
                 currentPath.points.push({ x: x, y: y });
-                // console.log(`Pen drawing: Added point (${x.toFixed(2)}, ${y.toFixed(2)}) to stroke ${currentPath.id}`);
+                // console.log(`Pen drawing: Added point (${x.toFixed(2)}, ${y.toFixed(2)})`); // DIAGNOSTIC (verbose)
             
+                // Immediate feedback drawing (on-screen canvas units)
                 ctx.save();
-                ctx.translate(viewTransform.offsetX, viewTransform.offsetY);
-                ctx.scale(viewTransform.scale, viewTransform.scale);
+                ctx.translate(displayOffsetX, displayOffsetY); // Apply display offset
+                ctx.scale(displayScale, displayScale);     // Apply display scale
                 ctx.globalAlpha = activeLayer.opacity; 
                 ctx.globalCompositeOperation = 'source-over';
 
                 ctx.beginPath();
-                ctx.moveTo(lastX, lastY); 
-                ctx.lineTo(x, y);         
+                ctx.moveTo(lastX, lastY); // lastX, lastY are already world coords
+                ctx.lineTo(x, y);         // x, y are current world coords
                 ctx.strokeStyle = currentPath.color;
-                ctx.lineWidth = currentPath.size / viewTransform.scale; 
+                ctx.lineWidth = currentPath.size; // Stroke size is in world units, scaling handles appearance
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 ctx.stroke();
                 ctx.restore();
@@ -947,49 +852,9 @@
             }
         }
 
-        // Pan (Hand Tool) Logic
-        handToolBtn.addEventListener('click', () => { currentTool = 'hand'; setActiveToolButton(handToolBtn); });
-
-        canvas.addEventListener('mousedown', (e) => {
-            if (currentTool === 'hand' && e.button === 0) {
-                isPanning = true;
-                const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
-                panStartX = canvasX - viewTransform.offsetX;
-                panStartY = canvasY - viewTransform.offsetY;
-                canvas.style.cursor = 'grabbing';
-                saveStateForUndo(); 
-            } else if (currentTool === 'pen' || currentTool === 'eraser') { // Ensure drawing starts on mousedown too
-                startDrawing(e);
-            }
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (currentTool === 'hand' && isPanning) {
-                const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
-                viewTransform.offsetX = canvasX - panStartX;
-                viewTransform.offsetY = canvasY - panStartY;
-                drawScene();
-            } else if (isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) { // Ensure drawing continues on mousemove
-                draw(e);
-            }
-        });
-
-        canvas.addEventListener('mouseup', () => {
-            if (currentTool === 'hand' && isPanning) {
-                isPanning = false;
-                canvas.style.cursor = 'grab';
-            } else if (isDrawing) { // Ensure drawing stops on mouseup
-                stopDrawing();
-            }
-        });
-        canvas.addEventListener('mouseleave', () => { 
-            if (currentTool === 'hand' && isPanning) {
-                isPanning = false;
-                canvas.style.cursor = 'grab';
-            } else if (isDrawing) { // Ensure drawing stops if mouse leaves
-                stopDrawing();
-            }
-        });
+        // Pan (Hand Tool) Logic REMOVED
+        // handToolBtn.addEventListener('click', () => { currentTool = 'hand'; setActiveToolButton(handToolBtn); });
+        // Associated mousedown, mousemove, mouseup, mouseleave for 'hand' tool REMOVED
 
 
         penToolBtn.addEventListener('click', () => { currentTool = 'pen'; setActiveToolButton(penToolBtn); });
@@ -1035,10 +900,9 @@
 
         undoBtn.addEventListener('click', () => {
             if (undoStack.length > 0) {
-                redoStack.push({ layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } });
-                const prevState = undoStack.pop();
-                layers = prevState.layers;
-                viewTransform = prevState.viewTransform;
+                // Undo state now only contains layers, not viewTransform
+                redoStack.push(JSON.parse(JSON.stringify(layers))); 
+                layers = undoStack.pop(); 
                 
                 const currentActiveStillExists = layers.find(l => l.id === activeLayerId);
                 if (!currentActiveStillExists && layers.length > 0) activeLayerId = layers[layers.length - 1].id;
@@ -1051,10 +915,8 @@
 
         redoBtn.addEventListener('click', () => {
             if (redoStack.length > 0) {
-                undoStack.push({ layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } });
-                const nextState = redoStack.pop();
-                layers = nextState.layers;
-                viewTransform = nextState.viewTransform;
+                undoStack.push(JSON.parse(JSON.stringify(layers))); 
+                layers = redoStack.pop(); 
 
                 const currentActiveStillExists = layers.find(l => l.id === activeLayerId);
                 if (!currentActiveStillExists && layers.length > 0) activeLayerId = layers[layers.length - 1].id;
@@ -1083,10 +945,12 @@
             targetCtx.fillStyle = '#FFFFFF'; 
             targetCtx.fillRect(0, 0, currentCanvasWidth, currentCanvasHeight);
 
+            // Apply display scaling and offset for on-screen rendering
             if (!isExporting) {
-                targetCtx.translate(viewTransform.offsetX, viewTransform.offsetY);
-                targetCtx.scale(viewTransform.scale, viewTransform.scale);
+                targetCtx.translate(displayOffsetX, displayOffsetY);
+                targetCtx.scale(displayScale, displayScale);
             }
+            // For export, strokes are already in WORLD_WIDTH/HEIGHT coords, so no further scaling needed here.
 
             layers.forEach(layer => {
                 if (!layer.isVisible || layer.strokes.length === 0) return;
@@ -1119,7 +983,8 @@
                         targetCtx.beginPath();
                         if (stroke.points.length === 1) { 
                             const p = stroke.points[0];
-                            const radius = (currentDynamicSize / 2) / (isExporting ? 1 : viewTransform.scale);
+                            // Stroke size is in world units, displayScale handles on-screen appearance. For export, scale is 1.
+                            const radius = currentDynamicSize / 2; 
                             targetCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
                             targetCtx.fillStyle = stroke.color; 
                             targetCtx.fill();
@@ -1135,7 +1000,7 @@
                                 if (i === 0) targetCtx.moveTo(p.x, p.y); else targetCtx.lineTo(p.x, p.y);
                             }
                             targetCtx.strokeStyle = stroke.color;
-                            targetCtx.lineWidth = currentDynamicSize / (isExporting ? 1 : viewTransform.scale);
+                            targetCtx.lineWidth = currentDynamicSize; // Stroke size is in world units
                             targetCtx.lineCap = 'round'; targetCtx.lineJoin = 'round'; 
                             targetCtx.stroke();
                         }
@@ -1144,7 +1009,7 @@
                 });
                 targetCtx.restore(); 
             });
-            if (!isExporting) targetCtx.restore(); 
+            if (!isExporting) targetCtx.restore(); // Restore from display scaling transform
         }
 
         function animate() { time += 1; drawScene(); animationFrameId = requestAnimationFrame(animate); }
@@ -1157,7 +1022,8 @@
 
         saveBtn.addEventListener('click', () => {
             if (layers.length === 0 || layers.every(l => l.strokes.length === 0)) { showModal("Save Sketch", "Canvas empty."); return; }
-            const dataToSave = { layers: layers, activeLayerId: activeLayerId, WORLD_WIDTH, WORLD_HEIGHT, viewTransform }; 
+            // Save without viewTransform as it's no longer user-interactive
+            const dataToSave = { layers: layers, activeLayerId: activeLayerId, WORLD_WIDTH, WORLD_HEIGHT }; 
             const jsonData = JSON.stringify(dataToSave); const blob = new Blob([jsonData], { type: 'application/octet-stream' }); 
             const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
             const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-'); a.download = `drawerz_sketch_${timestamp}.drz`;
@@ -1197,7 +1063,7 @@
                             else activeLayerId = null;
                             layers.forEach(l => l.isActive = (l.id === activeLayerId));
                             
-                            if(data.viewTransform) viewTransform = data.viewTransform; else setDefaultViewTransform();
+                            // viewTransform is no longer loaded as it's not interactive
                             
                             renderLayersList(); updateAnimationSlidersForActiveLayer(); resizeCanvas(); 
                             showModal("Load Sketch", "Sketch loaded!");
@@ -1653,13 +1519,13 @@
             setActiveToolButton(penToolBtn); 
             strokeSizeValue.textContent = strokeSizeSlider.value;
             if (layers.length === 0) { const initialLayer = createNewLayer(1); layers.push(initialLayer); setActiveLayer(initialLayer.id); }
-            else setActiveLayer(layers.find(l => l.isActive)?.id || layers[0]?.id);
+            else setActiveLayer(layers.find(l => l.isActive)?.id || (layers.length > 0 ? layers[0].id : null) ); 
             
-            setDefaultViewTransform(); 
+            resizeCanvas(); // This will also call setDefaultViewTransform if needed and drawScene
+            
             renderLayersList(); 
             updateAnimationSlidersForActiveLayer(); 
             updateUndoRedoButtons(); 
-            resizeCanvas(); 
             animate(); 
             updateCanvasCursor();
         }
@@ -1678,8 +1544,9 @@
             else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { redoBtn.click(); }
             else if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey) penToolBtn.click();
             else if (e.key.toLowerCase() === 'e' && !e.ctrlKey && !e.metaKey) eraserToolBtn.click();
-            else if (e.key.toLowerCase() === 'h' && !e.ctrlKey && !e.metaKey) handToolBtn.click(); 
-            else if (e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey) resetViewBtn.click(); 
+            // Removed H and R shortcuts for hand/reset view
+            // else if (e.key.toLowerCase() === 'h' && !e.ctrlKey && !e.metaKey) handToolBtn.click(); 
+            // else if (e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey) resetViewBtn.click(); 
             else prevented = false;
             if (prevented) e.preventDefault();
         });
