@@ -3,8 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drawerz Beta 3</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Drawerz Beta 3 - Animated Sketchpad & Layering Tool</title>
+
+    <link rel="icon" type="image/png" href="https://placehold.co/32x32/3B82F6/FFFFFF?text=DZ&font=montserrat">
+
+    <meta name="description" content="Drawerz Beta 3: A creative web application for drawing, animating strokes with layers, and exporting your artwork as MP4 or GIF. Features include dynamic brushes, layer management, and various animation effects.">
+    <meta name="keywords" content="drawing app, animation tool, vector graphics, layers, sketchpad, online drawing, html5 canvas, javascript animation, export mp4, export gif, Drawerz">
+    <meta name="author" content="Bixrail & Your Name/Studio"> <link rel="canonical" href="https://your-drawerz-beta-3-url.com/"> <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="Drawerz Beta 3 - Animated Sketchpad">
+    <meta property="og:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-drawerz-beta-3-url.com/"> <meta property="og:image" content="https://placehold.co/1200x630/1F2937/E5E7EB?text=Drawerz+Beta+3&font=montserrat"> <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Drawerz Beta 3">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Drawerz Beta 3 - Animated Sketchpad">
+    <meta name="twitter:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/1F2937/E5E7EB?text=Drawerz+Beta+3&font=montserrat"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
@@ -37,18 +54,22 @@
             z-index: 20; 
         }
 
-        .header-title {
-            font-size: 1.25rem; 
-            font-weight: 700; 
-            color: #d1d5db; 
-            font-family: 'Montserrat', sans-serif;
+        .header-logo-link { /* For the logo image to be clickable (e.g., to homepage) */
+            display: inline-block; /* Allows setting height/width if needed on the link itself */
         }
+        .header-logo {
+            height: 32px; /* Adjust as needed, e.g., 30-40px */
+            width: auto;  /* Maintain aspect ratio */
+            object-fit: contain; /* Ensures logo isn't distorted */
+            vertical-align: middle; /* Aligns image nicely if there's text next to it */
+        }
+
 
         .header-buttons {
             display: flex;
             gap: 0.5rem; 
             align-items: center;
-            flex-wrap: nowrap; /* Prevent wrapping of main header buttons */
+            flex-wrap: nowrap; 
         }
         .control-panel-toggle { 
             display: none; 
@@ -87,6 +108,7 @@
             max-width: 100%;
             max-height: 100%;
             border: 1px solid #4b5563; 
+            transform-origin: 0 0; 
         }
 
 
@@ -117,7 +139,7 @@
             font-family: 'Montserrat', sans-serif;
         }
 
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 0.5rem; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 0.5rem; } 
 
         .btn {
             display: inline-flex; 
@@ -254,11 +276,13 @@
     </style>
 
     <header class="header">
-        <h1 class="header-title">Drawerz Beta 3</h1>
+        <a href="#" class="header-logo-link"> <img src="https://placehold.co/200x40/3B82F6/FFFFFF?text=Drawerz&font=montserrat" alt="Drawerz Beta 3 Logo" class="header-logo">
+        </a>
         <div class="header-buttons">
             <button id="saveBtn" class="btn" title="Save (Ctrl + S)"><i class="fas fa-save"></i> <span>Save</span></button>
             <label for="loadInput" class="btn" title="Load (Ctrl + O)"><i class="fas fa-folder-open"></i> <span>Load</span></label>
-            <input type="file" id="loadInput" accept=".drz,.svg,.psd,.clip"> <button id="exportMp4Btn" class="btn btn-primary" title="Export MP4 (Ctrl + E)"><i class="fas fa-file-video"></i> <span>Export MP4</span></button>
+            <input type="file" id="loadInput" accept=".drz,.svg,.psd,.clip"> 
+            <button id="exportMp4Btn" class="btn btn-primary" title="Export MP4 (Ctrl + E)"><i class="fas fa-file-video"></i> <span>Export MP4</span></button>
             <button id="exportGifBtn" class="btn btn-primary" title="Export GIF"><i class="fas fa-file-image"></i> <span>Export GIF</span></button>
             <button id="clearActiveLayerBtn" class="btn btn-danger" title="Clear Active Layer"><i class="fas fa-eraser"></i> <span>Clear Layer</span></button>
             <button id="clearAllLayersBtn" class="btn btn-danger" title="Clear All Layers (Ctrl + Shift + Delete)"><i class="fas fa-bomb"></i> <span>Clear All</span></button>
@@ -279,6 +303,8 @@
                 <div class="tools-grid">
                     <button id="penTool" class="btn active-tool" title="Pen Tool (P)"><i class="fas fa-pen"></i> Pen</button>
                     <button id="eraserTool" class="btn" title="Eraser Tool (E)"><i class="fas fa-eraser"></i> Eraser</button>
+                    <button id="handTool" class="btn" title="Pan Tool (H)"><i class="fas fa-hand-paper"></i> Pan</button>
+                    <button id="resetViewBtn" class="btn" title="Reset View (R)"><i class="fas fa-search-plus"></i> Reset View</button>
                 </div>
                 <div class="form-group">
                     <label for="strokeSize" class="form-label">Stroke Size: <span id="strokeSizeValue">10</span>px</label>
@@ -353,6 +379,9 @@
         const ctx = canvas.getContext('2d');
         const penToolBtn = document.getElementById('penTool');
         const eraserToolBtn = document.getElementById('eraserTool');
+        const handToolBtn = document.getElementById('handTool');
+        const resetViewBtn = document.getElementById('resetViewBtn');
+
         const strokeSizeSlider = document.getElementById('strokeSize');
         const strokeSizeValue = document.getElementById('strokeSizeValue');
         const strokeColorPicker = document.getElementById('strokeColor');
@@ -369,7 +398,7 @@
         const saveBtn = document.getElementById('saveBtn');
         const loadInput = document.getElementById('loadInput');
         const exportMp4Btn = document.getElementById('exportMp4Btn'); 
-        const exportGifBtn = document.getElementById('exportGifBtn'); // New GIF export button
+        const exportGifBtn = document.getElementById('exportGifBtn'); 
         const loadingIndicator = document.getElementById('loadingIndicator');
         const loadingText = document.getElementById('loadingText'); 
         
@@ -387,49 +416,64 @@
         const controlPanelToggle = document.getElementById('controlPanelToggle');
 
         let isDrawing = false;
-        let currentTool = 'pen';
+        let currentTool = 'pen'; // 'pen', 'eraser', 'hand'
         let currentStrokeSize = 10;
         let currentStrokeColor = '#000000';
         
         let layers = [];
         let activeLayerId = null;
 
-        let lastX, lastY;
+        let lastX, lastY; // For drawing, in world coordinates
         let animationFrameId;
         let time = 0; 
         let undoStack = [];
         let redoStack = [];
 
-        // Define fixed export resolution for MP4 and GIF
-        const EXPORT_WIDTH = 1920; // FHD
-        const EXPORT_HEIGHT = 1080; // FHD
+        const WORLD_WIDTH = 1920;
+        const WORLD_HEIGHT = 1080;
+
+        let viewTransform = {
+            scale: 1,
+            offsetX: 0, 
+            offsetY: 0  
+        };
+        let isPanning = false;
+        let panStartX, panStartY;
+        const MIN_ZOOM = 0.1;
+        const MAX_ZOOM = 10;
+
+        const EXPORT_WIDTH = 1920; 
+        const EXPORT_HEIGHT = 1080; 
 
         function generateLayerId() { return Date.now() + Math.random().toString(36).substr(2, 9); }
         function getActiveLayer() { return layers.find(layer => layer.id === activeLayerId); }
 
         function setActiveToolButton(activeBtn) {
-            [penToolBtn, eraserToolBtn].forEach(btn => btn.classList.remove('active-tool'));
+            [penToolBtn, eraserToolBtn, handToolBtn].forEach(btn => btn.classList.remove('active-tool'));
             if (activeBtn) activeBtn.classList.add('active-tool');
             updateCanvasCursor(); 
         }
         
         function updateCanvasCursor() {
-            const size = Math.max(2, currentStrokeSize); 
+            const size = Math.max(2, currentStrokeSize * viewTransform.scale); 
             let cursorSVG;
             if (currentTool === 'pen') {
                 cursorSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2}" fill="rgba(0,0,0,0.5)"/></svg>`;
+                canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(cursorSVG)}') ${size/2} ${size/2}, auto`;
             } else if (currentTool === 'eraser') {
                 const outlineWidth = Math.max(1, Math.min(2, size / 10)); 
                 cursorSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2 - outlineWidth/2}" fill="rgba(255,255,255,0.5)" stroke="rgba(0,0,0,0.7)" stroke-width="${outlineWidth}"/></svg>`;
+                canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(cursorSVG)}') ${size/2} ${size/2}, auto`;
+            } else if (currentTool === 'hand') {
+                canvas.style.cursor = isPanning ? 'grabbing' : 'grab';
             } else {
                 canvas.style.cursor = 'default';
-                return;
             }
-            canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(cursorSVG)}') ${size/2} ${size/2}, auto`;
         }
 
         function saveStateForUndo() {
-            undoStack.push(JSON.parse(JSON.stringify(layers))); 
+            const state = { layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } };
+            undoStack.push(state);
             if (undoStack.length > 30) undoStack.shift();
             redoStack = []; 
             updateUndoRedoButtons();
@@ -474,6 +518,15 @@
             }
         });
 
+        function setDefaultViewTransform() {
+            const scaleX = canvas.width / WORLD_WIDTH;
+            const scaleY = canvas.height / WORLD_HEIGHT;
+            viewTransform.scale = Math.min(scaleX, scaleY); 
+
+            viewTransform.offsetX = (canvas.width - WORLD_WIDTH * viewTransform.scale) / 2;
+            viewTransform.offsetY = (canvas.height - WORLD_HEIGHT * viewTransform.scale) / 2;
+        }
+
 
         function resizeCanvas() {
             const canvasContainer = canvas.parentElement;
@@ -482,8 +535,13 @@
             const paddingY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
             const containerWidth = canvasContainer.clientWidth - paddingX;
             const containerHeight = canvasContainer.clientHeight - paddingY;
+            
             canvas.width = Math.max(10, containerWidth); 
             canvas.height = Math.max(10, containerHeight);
+            
+            if (viewTransform.scale === 1 && viewTransform.offsetX === 0 && viewTransform.offsetY === 0 && layers.length > 0) {
+                 setDefaultViewTransform();
+            }
             drawScene(); 
         }
         window.addEventListener('resize', resizeCanvas);
@@ -643,71 +701,292 @@
                 }
             });
         });
+        
+        // --- Canvas View Transformation ---
+        function getCanvasMousePos(e) { // Gets mouse/touch relative to canvas element
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
 
+        function getTransformedMousePos(e) { // Converts screen/canvas pos to world pos
+            const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
+            return {
+                x: (canvasX - viewTransform.offsetX) / viewTransform.scale,
+                y: (canvasY - viewTransform.offsetY) / viewTransform.scale
+            };
+        }
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            saveStateForUndo(); 
+
+            const { x: mouseX, y: mouseY } = getCanvasMousePos(e); // Mouse pos relative to canvas element
+
+            const zoomIntensity = 0.1;
+            const delta = e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
+            const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewTransform.scale * (1 + delta)));
+
+            // Adjust offset to zoom towards the mouse point
+            viewTransform.offsetX = mouseX - (mouseX - viewTransform.offsetX) * (newScale / viewTransform.scale);
+            viewTransform.offsetY = mouseY - (mouseY - viewTransform.offsetY) * (newScale / viewTransform.scale);
+            viewTransform.scale = newScale;
+            
+            updateCanvasCursor(); // Cursor size might change with zoom
+            drawScene();
+        }, { passive: false });
+
+        let lastPinchDist = null;
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) { 
+                e.preventDefault();
+                isPanning = false; 
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+                saveStateForUndo(); 
+            } else if (e.touches.length === 1 && currentTool === 'hand') {
+                isPanning = true;
+                const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
+                panStartX = canvasX - viewTransform.offsetX;
+                panStartY = canvasY - viewTransform.offsetY;
+                canvas.style.cursor = 'grabbing';
+                saveStateForUndo();
+            } else if (e.touches.length === 1 && (currentTool === 'pen' || currentTool === 'eraser')) {
+                 startDrawing(e); // Allow drawing to start on touch
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && lastPinchDist !== null) {
+                e.preventDefault();
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const currentPinchDist = Math.sqrt(dx * dx + dy * dy);
+                const scaleChange = currentPinchDist / lastPinchDist;
+                
+                const { x: pinchCenterX, y: pinchCenterY } = getCanvasMousePos({ 
+                    clientX: (e.touches[0].clientX + e.touches[1].clientX) / 2, 
+                    clientY: (e.touches[0].clientY + e.touches[1].clientY) / 2 
+                });
+
+                const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewTransform.scale * scaleChange));
+                viewTransform.offsetX = pinchCenterX - (pinchCenterX - viewTransform.offsetX) * (newScale / viewTransform.scale);
+                viewTransform.offsetY = pinchCenterY - (pinchCenterY - viewTransform.offsetY) * (newScale / viewTransform.scale);
+                viewTransform.scale = newScale;
+                lastPinchDist = currentPinchDist;
+                updateCanvasCursor(); drawScene();
+            } else if (e.touches.length === 1 && currentTool === 'hand' && isPanning) {
+                e.preventDefault();
+                const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
+                viewTransform.offsetX = canvasX - panStartX;
+                viewTransform.offsetY = canvasY - panStartY;
+                drawScene();
+            } else if (e.touches.length === 1 && isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) {
+                draw(e); // Allow drawing to continue on touch
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) lastPinchDist = null;
+            if (e.touches.length < 1 && currentTool === 'hand' && isPanning) {
+                isPanning = false;
+                canvas.style.cursor = 'grab';
+            }
+             if (e.touches.length < 1 && isDrawing) { // If drawing was active
+                stopDrawing();
+            }
+        });
+
+
+        resetViewBtn.addEventListener('click', () => {
+            saveStateForUndo();
+            setDefaultViewTransform();
+            updateCanvasCursor(); 
+            drawScene();
+        });
+
+
+        // --- Drawing Logic (Layer-aware & View Transformed) ---
         function startDrawing(e) {
+            // console.log("startDrawing called. Tool:", currentTool);
+            if (currentTool !== 'pen' && currentTool !== 'eraser') {
+                // console.log("startDrawing: Not pen or eraser tool.");
+                return;
+            }
             const activeLayer = getActiveLayer();
-            if (!activeLayer || !activeLayer.isVisible) return; 
-            if (e.button !== 0 && e.type === 'mousedown') return; 
+            if (!activeLayer) { 
+                // console.error("startDrawing: No active layer!"); 
+                return; 
+            }
+            if (!activeLayer.isVisible) {
+                // console.log("startDrawing: Active layer is not visible.");
+                return;
+            }
+            if (e.button !== 0 && e.type === 'mousedown') {
+                // console.log("startDrawing: Not main mouse button.");
+                return; // Only main mouse button
+            }
             
             saveStateForUndo(); 
             isDrawing = true;
-            const { offsetX, offsetY } = getMousePos(e);
+            const { x, y } = getTransformedMousePos(e); 
+            // console.log(`startDrawing: Starting at world coords (${x.toFixed(2)}, ${y.toFixed(2)}) on layer ${activeLayer.name}`);
             
-            activeLayer.strokes.push({
-                points: [{ x: offsetX, y: offsetY }],
-                color: currentTool === 'pen' ? currentStrokeColor : '#FFFFFF', // Eraser color is white for destination-out
-                size: currentStrokeSize, tool: currentTool, originalSize: currentStrokeSize,
-                birthTime: time, 
-            });
-            [lastX, lastY] = [offsetX, offsetY];
+            if (currentTool === 'pen') {
+                activeLayer.strokes.push({
+                    id: generateLayerId(), 
+                    points: [{ x: x, y: y }],
+                    color: currentStrokeColor, 
+                    size: currentStrokeSize, 
+                    tool: currentTool, 
+                    originalSize: currentStrokeSize,
+                    birthTime: time, 
+                });
+                // console.log("startDrawing: Pen stroke added to layer:", activeLayer.strokes[activeLayer.strokes.length -1]);
+            }
+            // For eraser, we just need to set the starting point for path checking during the 'draw' (mousemove/touchmove) event.
+            lastX = x; lastY = y; 
         }
+
+        // Helper for eraser: point in circle check
+        function isPointInCircle(px, py, cx, cy, radius) {
+            const dx = px - cx;
+            const dy = py - cy;
+            return dx * dx + dy * dy <= radius * radius;
+        }
+
 
         function draw(e) {
+            // console.log("draw called. isDrawing:", isDrawing, "Tool:", currentTool);
             const activeLayer = getActiveLayer();
-            if (!isDrawing || !activeLayer || !activeLayer.isVisible) return;
+            if (!isDrawing || !activeLayer || !activeLayer.isVisible) {
+                // if(!isDrawing) console.log("draw: Not drawing.");
+                // if(!activeLayer) console.error("draw: No active layer!");
+                // if(activeLayer && !activeLayer.isVisible) console.log("draw: Active layer not visible.");
+                return;
+            }
 
-            const { offsetX, offsetY } = getMousePos(e);
-            const currentPath = activeLayer.strokes[activeLayer.strokes.length - 1];
-            if (!currentPath) { isDrawing = false; return; }
-            currentPath.points.push({ x: offsetX, y: offsetY });
-  
-            ctx.save();
-            ctx.globalAlpha = activeLayer.opacity; 
+            const { x, y } = getTransformedMousePos(e); 
+
             if (currentTool === 'eraser') {
-                ctx.globalCompositeOperation = 'destination-out';
-            } else {
+                // console.log(`Eraser at world coords (${x.toFixed(2)}, ${y.toFixed(2)})`);
+                const eraserRadiusWorld = currentStrokeSize / 2; 
+                let erasedSomething = false;
+                for (let i = activeLayer.strokes.length - 1; i >= 0; i--) {
+                    const stroke = activeLayer.strokes[i];
+                    if (stroke.tool === 'pen') { 
+                        let hit = false;
+                        for (const p of stroke.points) {
+                            if (isPointInCircle(p.x, p.y, x, y, eraserRadiusWorld)) {
+                                hit = true;
+                                break;
+                            }
+                        }
+                        if (hit) {
+                            // console.log("Eraser hit stroke:", stroke.id);
+                            activeLayer.strokes.splice(i, 1); 
+                            erasedSomething = true;
+                        }
+                    }
+                }
+                if (erasedSomething) {
+                    // console.log("Eraser removed strokes, redrawing scene.");
+                    drawScene(); 
+                }
+                lastX = x; lastY = y; 
+
+            } else if (currentTool === 'pen') {
+                const currentPath = activeLayer.strokes[activeLayer.strokes.length - 1];
+                if (!currentPath || currentPath.tool !== 'pen') { 
+                    // console.error("draw (pen): No current path or path is not a pen stroke.");
+                    isDrawing = false; 
+                    return; 
+                }
+                currentPath.points.push({ x: x, y: y });
+                // console.log(`Pen drawing: Added point (${x.toFixed(2)}, ${y.toFixed(2)}) to stroke ${currentPath.id}`);
+            
+                ctx.save();
+                ctx.translate(viewTransform.offsetX, viewTransform.offsetY);
+                ctx.scale(viewTransform.scale, viewTransform.scale);
+                ctx.globalAlpha = activeLayer.opacity; 
                 ctx.globalCompositeOperation = 'source-over';
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY); 
+                ctx.lineTo(x, y);         
+                ctx.strokeStyle = currentPath.color;
+                ctx.lineWidth = currentPath.size / viewTransform.scale; 
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.stroke();
+                ctx.restore();
+                lastX = x; lastY = y; 
             }
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(offsetX, offsetY);
-            ctx.strokeStyle = currentPath.color; // Eraser still uses a "color" for its path, but composite op makes it erase
-            ctx.lineWidth = currentPath.size;
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            ctx.stroke();
-            ctx.restore(); // Restores globalCompositeOperation and globalAlpha
-            [lastX, lastY] = [offsetX, offsetY];
         }
 
-        function stopDrawing() { if (isDrawing) isDrawing = false; }
-
-        function getMousePos(e) {
-            const rect = canvas.getBoundingClientRect();
-            if (e.touches && e.touches.length > 0) {
-                return { offsetX: e.touches[0].clientX - rect.left, offsetY: e.touches[0].clientY - rect.top };
+        function stopDrawing() { 
+            // console.log("stopDrawing called. Tool:", currentTool, "isDrawing:", isDrawing);
+            if (currentTool !== 'pen' && currentTool !== 'eraser') return;
+            if (isDrawing) {
+                isDrawing = false;
+                if(currentTool === 'eraser') {
+                    // console.log("stopDrawing (eraser): Final redraw after erasing.");
+                    drawScene();
+                }
+                // console.log("Drawing stopped.");
             }
-            return { offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
         }
 
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing); 
+        // Pan (Hand Tool) Logic
+        handToolBtn.addEventListener('click', () => { currentTool = 'hand'; setActiveToolButton(handToolBtn); });
 
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, { passive: false });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, { passive: false });
-        canvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); }, { passive: false });
-        canvas.addEventListener('touchcancel', (e) => { e.preventDefault(); stopDrawing(); }, { passive: false });
+        canvas.addEventListener('mousedown', (e) => {
+            if (currentTool === 'hand' && e.button === 0) {
+                isPanning = true;
+                const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
+                panStartX = canvasX - viewTransform.offsetX;
+                panStartY = canvasY - viewTransform.offsetY;
+                canvas.style.cursor = 'grabbing';
+                saveStateForUndo(); 
+            } else if (currentTool === 'pen' || currentTool === 'eraser') { // Ensure drawing starts on mousedown too
+                startDrawing(e);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (currentTool === 'hand' && isPanning) {
+                const { x: canvasX, y: canvasY } = getCanvasMousePos(e);
+                viewTransform.offsetX = canvasX - panStartX;
+                viewTransform.offsetY = canvasY - panStartY;
+                drawScene();
+            } else if (isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) { // Ensure drawing continues on mousemove
+                draw(e);
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (currentTool === 'hand' && isPanning) {
+                isPanning = false;
+                canvas.style.cursor = 'grab';
+            } else if (isDrawing) { // Ensure drawing stops on mouseup
+                stopDrawing();
+            }
+        });
+        canvas.addEventListener('mouseleave', () => { 
+            if (currentTool === 'hand' && isPanning) {
+                isPanning = false;
+                canvas.style.cursor = 'grab';
+            } else if (isDrawing) { // Ensure drawing stops if mouse leaves
+                stopDrawing();
+            }
+        });
 
 
         penToolBtn.addEventListener('click', () => { currentTool = 'pen'; setActiveToolButton(penToolBtn); });
@@ -753,24 +1032,32 @@
 
         undoBtn.addEventListener('click', () => {
             if (undoStack.length > 0) {
-                redoStack.push(JSON.parse(JSON.stringify(layers))); 
-                layers = undoStack.pop(); 
+                redoStack.push({ layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } });
+                const prevState = undoStack.pop();
+                layers = prevState.layers;
+                viewTransform = prevState.viewTransform;
+                
                 const currentActiveStillExists = layers.find(l => l.id === activeLayerId);
                 if (!currentActiveStillExists && layers.length > 0) activeLayerId = layers[layers.length - 1].id;
                 else if (layers.length === 0) activeLayerId = null;
                 layers.forEach(l => l.isActive = (l.id === activeLayerId));
+
                 renderLayersList(); updateAnimationSlidersForActiveLayer(); drawScene(); updateUndoRedoButtons();
             }
         });
 
         redoBtn.addEventListener('click', () => {
             if (redoStack.length > 0) {
-                undoStack.push(JSON.parse(JSON.stringify(layers))); 
-                layers = redoStack.pop(); 
+                undoStack.push({ layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } });
+                const nextState = redoStack.pop();
+                layers = nextState.layers;
+                viewTransform = nextState.viewTransform;
+
                 const currentActiveStillExists = layers.find(l => l.id === activeLayerId);
                 if (!currentActiveStillExists && layers.length > 0) activeLayerId = layers[layers.length - 1].id;
                 else if (layers.length === 0) activeLayerId = null;
                 layers.forEach(l => l.isActive = (l.id === activeLayerId));
+
                 renderLayersList(); updateAnimationSlidersForActiveLayer(); drawScene(); updateUndoRedoButtons();
             }
         });
@@ -782,8 +1069,21 @@
             const currentCanvasWidth = isExporting ? EXPORT_WIDTH : canvas.width;
             const currentCanvasHeight = isExporting ? EXPORT_HEIGHT : canvas.height;
 
+            targetCtx.save(); 
+            if (isExporting) {
+                if(canvas.width !== EXPORT_WIDTH || canvas.height !== EXPORT_HEIGHT) {
+                    canvas.width = EXPORT_WIDTH;
+                    canvas.height = EXPORT_HEIGHT;
+                }
+            }
+
             targetCtx.fillStyle = '#FFFFFF'; 
             targetCtx.fillRect(0, 0, currentCanvasWidth, currentCanvasHeight);
+
+            if (!isExporting) {
+                targetCtx.translate(viewTransform.offsetX, viewTransform.offsetY);
+                targetCtx.scale(viewTransform.scale, viewTransform.scale);
+            }
 
             layers.forEach(layer => {
                 if (!layer.isVisible || layer.strokes.length === 0) return;
@@ -811,40 +1111,38 @@
                         currentDynamicSize = Math.max(1, currentDynamicSize);
                     }
                     
-                    // Apply erase effect if stroke was made with eraser
-                    if (stroke.tool === 'eraser') {
-                        targetCtx.globalCompositeOperation = 'destination-out';
-                    } else {
+                    // True eraser logic: only draw 'pen' strokes
+                    if (stroke.tool === 'pen') {
                         targetCtx.globalCompositeOperation = 'source-over';
-                    }
-
-                    targetCtx.beginPath();
-                    if (stroke.points.length === 1) { 
-                        const p = stroke.points[0];
-                        targetCtx.arc(p.x, p.y, currentDynamicSize / 2, 0, Math.PI * 2);
-                        targetCtx.fillStyle = stroke.color; // For eraser, this will be white, but destination-out makes it erase
-                        targetCtx.fill();
-                    } else { 
-                        for (let i = 0; i < stroke.points.length; i++) {
-                            let p = { ...stroke.points[i] }; 
-                            if (wiggleAmp > 0 && i > 0) {
-                                const prevP = stroke.points[i-1]; const dx = p.x - prevP.x; const dy = p.y - prevP.y;
-                                const angle = Math.atan2(dy, dx); const normalAngle = angle + Math.PI / 2; 
-                                const wiggleOffset = Math.sin(currentTime * 0.1 * animSpeed + i * 0.5 + stroke.birthTime * 0.01) * wiggleAmp;
-                                p.x += Math.cos(normalAngle) * wiggleOffset; p.y += Math.sin(normalAngle) * wiggleOffset;
+                        targetCtx.beginPath();
+                        if (stroke.points.length === 1) { 
+                            const p = stroke.points[0];
+                            const radius = (currentDynamicSize / 2) / (isExporting ? 1 : viewTransform.scale);
+                            targetCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                            targetCtx.fillStyle = stroke.color; 
+                            targetCtx.fill();
+                        } else { 
+                            for (let i = 0; i < stroke.points.length; i++) {
+                                let p = { ...stroke.points[i] }; 
+                                if (wiggleAmp > 0 && i > 0) {
+                                    const prevP = stroke.points[i-1]; const dx = p.x - prevP.x; const dy = p.y - prevP.y;
+                                    const angle = Math.atan2(dy, dx); const normalAngle = angle + Math.PI / 2; 
+                                    const wiggleOffset = Math.sin(currentTime * 0.1 * animSpeed + i * 0.5 + stroke.birthTime * 0.01) * wiggleAmp;
+                                    p.x += Math.cos(normalAngle) * wiggleOffset; p.y += Math.sin(normalAngle) * wiggleOffset;
+                                }
+                                if (i === 0) targetCtx.moveTo(p.x, p.y); else targetCtx.lineTo(p.x, p.y);
                             }
-                            if (i === 0) targetCtx.moveTo(p.x, p.y); else targetCtx.lineTo(p.x, p.y);
+                            targetCtx.strokeStyle = stroke.color;
+                            targetCtx.lineWidth = currentDynamicSize / (isExporting ? 1 : viewTransform.scale);
+                            targetCtx.lineCap = 'round'; targetCtx.lineJoin = 'round'; 
+                            targetCtx.stroke();
                         }
-             
-                        targetCtx.strokeStyle = stroke.color; // For eraser, this will be white
-                        targetCtx.lineWidth = currentDynamicSize;
-                        targetCtx.lineCap = 'round'; targetCtx.lineJoin = 'round'; 
-                        targetCtx.stroke();
                     }
-                    targetCtx.restore(); // Restore from individual stroke transformations and composite op
+                    targetCtx.restore(); 
                 });
-                targetCtx.restore(); // Restore from layer opacity
+                targetCtx.restore(); 
             });
+            if (!isExporting) targetCtx.restore(); 
         }
 
         function animate() { time += 1; drawScene(); animationFrameId = requestAnimationFrame(animate); }
@@ -857,7 +1155,7 @@
 
         saveBtn.addEventListener('click', () => {
             if (layers.length === 0 || layers.every(l => l.strokes.length === 0)) { showModal("Save Sketch", "Canvas empty."); return; }
-            const dataToSave = { layers: layers, activeLayerId: activeLayerId, canvasWidth: canvas.width, canvasHeight: canvas.height };
+            const dataToSave = { layers: layers, activeLayerId: activeLayerId, WORLD_WIDTH, WORLD_HEIGHT, viewTransform }; 
             const jsonData = JSON.stringify(dataToSave); const blob = new Blob([jsonData], { type: 'application/octet-stream' }); 
             const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
             const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-'); a.download = `drawerz_sketch_${timestamp}.drz`;
@@ -896,6 +1194,9 @@
                             else if (layers.length > 0) activeLayerId = layers[layers.length - 1].id;
                             else activeLayerId = null;
                             layers.forEach(l => l.isActive = (l.id === activeLayerId));
+                            
+                            if(data.viewTransform) viewTransform = data.viewTransform; else setDefaultViewTransform();
+                            
                             renderLayersList(); updateAnimationSlidersForActiveLayer(); resizeCanvas(); 
                             showModal("Load Sketch", "Sketch loaded!");
                         } else showModal("Load Error", "Invalid .drz file. Missing 'layers' data.");
@@ -922,7 +1223,7 @@
                 };
                 reader.onerror = () => { showModal("Load Error", "Error reading SVG file."); loadingIndicator.classList.add('hidden'); loadInput.value = ''; };
                 reader.readAsText(file);
-            } else if (fileExtension === 'psd' || fileExtension === 'clip') { // Corrected to .clip
+            } else if (fileExtension === 'psd' || fileExtension === 'clip') { 
                  showModal("Import Not Supported", 
                     `Direct import of <strong>.${fileExtension.toUpperCase()}</strong> files is not supported due to their complexity. ` +
                     "Please export your artwork as an SVG from Photoshop or Clip Studio Paint if you wish to import vector data."
@@ -955,15 +1256,15 @@
                 vbW = parseFloat(parts[2]) || vbW;
                 vbH = parseFloat(parts[3]) || vbH;
             }
-            // Scale to fit within the EXPORT_WIDTH/EXPORT_HEIGHT for consistency
-            const scaleX = EXPORT_WIDTH / vbW;
-            const scaleY = EXPORT_HEIGHT / vbH;
-            const globalScale = Math.min(scaleX, scaleY) * 0.9; // Fit within 90% of export area
+            
+            const scaleX = WORLD_WIDTH / vbW; 
+            const scaleY = WORLD_HEIGHT / vbH;
+            const globalScale = Math.min(scaleX, scaleY) * 0.9; 
 
             function transformPoint(x, y) {
                 return {
-                    x: (x - vbX) * globalScale + (EXPORT_WIDTH - vbW * globalScale) / 2,
-                    y: (y - vbY) * globalScale + (EXPORT_HEIGHT - vbH * globalScale) / 2
+                    x: (x - vbX) * globalScale + (WORLD_WIDTH - vbW * globalScale) / 2,
+                    y: (y - vbY) * globalScale + (WORLD_HEIGHT - vbH * globalScale) / 2
                 };
             }
             
@@ -997,7 +1298,7 @@
                         if (subPathStart && points.length > 0) {
                             const lastPoint = points[points.length-1];
                             const firstTransformed = transformPoint(subPathStart.x, subPathStart.y);
-                            if(Math.abs(lastPoint.x - firstTransformed.x) > 0.1 || Math.abs(lastPoint.y - firstTransformed.y) > 0.1) { // Check if not already closed
+                            if(Math.abs(lastPoint.x - firstTransformed.x) > 0.1 || Math.abs(lastPoint.y - firstTransformed.y) > 0.1) { 
                                 points.push(firstTransformed);
                             }
                         }
@@ -1051,7 +1352,7 @@
 
                 if (points.length > 0) {
                     activeLayer.strokes.push({
-                        points: points, color: strokeColor, size: strokeWidth,
+                        id: generateLayerId(), points: points, color: strokeColor, size: strokeWidth,
                         tool: 'pen', originalSize: strokeWidth, birthTime: time 
                     });
                     importedStrokesCount++;
@@ -1206,7 +1507,7 @@
                     
                     canvas.width = originalCanvasWidth;
                     canvas.height = originalCanvasHeight;
-                    drawScene(false, liveAnimationTimeAtStart); 
+                    resizeCanvas(); 
 
                     loadingIndicator.classList.add('hidden');
                     time = liveAnimationTimeAtStart; 
@@ -1224,10 +1525,10 @@
             loadingIndicator.classList.remove('hidden');
             if(loadingText) loadingText.textContent = "Preparing GIF export...";
 
-            const frameRate = 10; // Lower FPS for GIF
+            const frameRate = 10; 
             const durationSeconds = 15;
             const totalFrames = frameRate * durationSeconds;
-            const delay = 1000 / frameRate; // Delay between frames in ms
+            const delay = 1000 / frameRate; 
 
             const liveAnimationTimeAtStart = time;
             let exportRenderTime = liveAnimationTimeAtStart;
@@ -1241,13 +1542,13 @@
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
             const gif = new GIF({
-                workers: 2, // Number of web workers to use
-                quality: 10, // Lower is better, 1-30. 10 is a good default.
+                workers: 2, 
+                quality: 10, 
                 workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
                 width: EXPORT_WIDTH,
                 height: EXPORT_HEIGHT,
-                background: '#FFF', // Set background for transparency handling
-                transparent: null // Auto-detect, or set to a hex color for transparency
+                background: '#FFF', 
+                transparent: null 
             });
 
             const originalCanvasWidth = canvas.width;
@@ -1273,7 +1574,7 @@
 
                 exportRenderTime += timeStepPerVideoFrame;
                 currentFrame++;
-                setTimeout(addGifFrame, 10); // Small delay to allow UI updates
+                setTimeout(addGifFrame, 10); 
             }
 
             gif.on('finished', function(blob) {
@@ -1289,7 +1590,7 @@
 
                 canvas.width = originalCanvasWidth;
                 canvas.height = originalCanvasHeight;
-                drawScene(false, liveAnimationTimeAtStart);
+                resizeCanvas(); 
 
                 loadingIndicator.classList.add('hidden');
                 showModal("Export Complete", "Animation exported as GIF!");
@@ -1351,8 +1652,13 @@
             strokeSizeValue.textContent = strokeSizeSlider.value;
             if (layers.length === 0) { const initialLayer = createNewLayer(1); layers.push(initialLayer); setActiveLayer(initialLayer.id); }
             else setActiveLayer(layers.find(l => l.isActive)?.id || layers[0]?.id);
-            renderLayersList(); updateAnimationSlidersForActiveLayer(); updateUndoRedoButtons(); 
-            resizeCanvas(); animate(); 
+            
+            setDefaultViewTransform(); 
+            renderLayersList(); 
+            updateAnimationSlidersForActiveLayer(); 
+            updateUndoRedoButtons(); 
+            resizeCanvas(); 
+            animate(); 
             updateCanvasCursor();
         }
         addLayerBtn.addEventListener('click', addLayer);
@@ -1370,6 +1676,8 @@
             else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { redoBtn.click(); }
             else if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey) penToolBtn.click();
             else if (e.key.toLowerCase() === 'e' && !e.ctrlKey && !e.metaKey) eraserToolBtn.click();
+            else if (e.key.toLowerCase() === 'h' && !e.ctrlKey && !e.metaKey) handToolBtn.click(); 
+            else if (e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey) resetViewBtn.click(); 
             else prevented = false;
             if (prevented) e.preventDefault();
         });
