@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drawerz Beta 3 - Animated Sketchpad & Layering Tool</title>
 
-    <link rel="icon" type="image/png" href="https://placehold.co/32x32/3B82F6/FFFFFF?text=DZ&font=montserrat">
+    <link rel="icon" type="image/png" href="icon-logo.png">
 
     <meta name="description" content="Drawerz Beta 3: A creative web application for drawing, animating strokes with layers, and exporting your artwork as MP4 or GIF. Features include dynamic brushes, layer management, and various animation effects.">
     <meta name="keywords" content="drawing app, animation tool, vector graphics, layers, sketchpad, online drawing, html5 canvas, javascript animation, export mp4, export gif, Drawerz">
@@ -14,14 +14,16 @@
     <meta property="og:title" content="Drawerz Beta 3 - Animated Sketchpad">
     <meta property="og:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-drawerz-beta-3-url.com/"> <meta property="og:image" content="https://placehold.co/1200x630/1F2937/E5E7EB?text=Drawerz+Beta+3&font=montserrat"> <meta property="og:image:width" content="1200">
+    <meta property="og:url" content="https://your-drawerz-beta-3-url.com/"> <meta property="og:image" content="chat-logo.png"> 
+    <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Drawerz Beta 3">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Drawerz Beta 3 - Animated Sketchpad">
     <meta name="twitter:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
-    <meta name="twitter:image" content="https://placehold.co/1200x630/1F2937/E5E7EB?text=Drawerz+Beta+3&font=montserrat"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="twitter:image" content="chat-logo.png"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
@@ -276,7 +278,8 @@
     </style>
 
     <header class="header">
-        <a href="#" class="header-logo-link"> <img src="https://placehold.co/200x40/3B82F6/FFFFFF?text=Drawerz&font=montserrat" alt="Drawerz Beta 3 Logo" class="header-logo">
+        <a href="#" class="header-logo-link">
+            <img src="head-logo.png" alt="Drawerz Beta 3 Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/200x40/3B82F6/FFFFFF?text=Drawerz&font=montserrat';">
         </a>
         <div class="header-buttons">
             <button id="saveBtn" class="btn" title="Save (Ctrl + S)"><i class="fas fa-save"></i> <span>Save</span></button>
@@ -1111,7 +1114,6 @@
                         currentDynamicSize = Math.max(1, currentDynamicSize);
                     }
                     
-                    // True eraser logic: only draw 'pen' strokes
                     if (stroke.tool === 'pen') {
                         targetCtx.globalCompositeOperation = 'source-over';
                         targetCtx.beginPath();
