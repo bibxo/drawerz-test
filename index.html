@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drawerz Beta 3 - Quadtree & Compression Optimized</title>
+    <title>Drawerz Beta 3 - Animated Sketchpad & Layering Tool</title>
 
     <link rel="icon" type="image/png" href="icon-logo.png">
 
@@ -27,28 +27,158 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script> </head>
+</head>
 <body class="bg-gray-900 text-white flex flex-col h-screen overflow-hidden">
     <style>
-        /* Base styles (no changes from previous version) */
-        body, html { font-family: 'Montserrat', sans-serif !important; overscroll-behavior: none; background-color: #111827; color: #e5e7eb; display: flex; flex-direction: column; height: 100vh; margin: 0; overflow: hidden; }
-        .header { background-color: #1f2937; padding: 0.75rem 1rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #374151; flex-shrink: 0; z-index: 20; }
-        .header-logo-link { display: inline-block; }
-        .header-logo { height: 32px; width: auto;  object-fit: contain; vertical-align: middle; }
-        .header-buttons { display: flex; gap: 0.5rem; align-items: center; flex-wrap: nowrap; }
-        .control-panel-toggle { display: none; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; font-family: 'Montserrat', sans-serif; }
-        .main-content { display: flex; flex: 1; overflow: hidden; position: relative; }
-        .canvas-container { flex: 1; padding: 0.5rem; display: flex; justify-content: center; align-items: center; background-color: #374151; overflow: auto; position: relative; }
-        #drawingCanvas { background-color: white; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); border: 1px solid #4b5563; }
-        .control-panel { width: 24rem; background-color: #111827; padding: 1rem; box-shadow: -5px 0 15px -3px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; gap: 1.25rem; border-left: 1px solid #374151; max-height: 100%; overflow-y: auto; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; z-index: 10; font-family: 'Montserrat', sans-serif; }
+        /* Base styles */
+        body, html {
+            font-family: 'Montserrat', sans-serif !important; 
+            overscroll-behavior: none;
+            background-color: #111827; 
+            color: #e5e7eb; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+     
+        .header {
+            background-color: #1f2937; 
+            padding: 0.75rem 1rem; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #374151; 
+            flex-shrink: 0; 
+            z-index: 20; 
+        }
+
+        .header-logo-link {
+            display: inline-block;
+        }
+        .header-logo {
+            height: 32px; 
+            width: auto;  
+            object-fit: contain; 
+            vertical-align: middle; 
+        }
+
+
+        .header-buttons {
+            display: flex;
+            gap: 0.5rem; 
+            align-items: center;
+            flex-wrap: nowrap; 
+        }
+        .control-panel-toggle { 
+            display: none; 
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden; 
+            position: relative; 
+        }
+
+        .canvas-container {
+            flex: 1;
+            padding: 0.5rem; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #374151; 
+            overflow: auto; /* Allow scrolling for FHD canvas if container is smaller */
+            position: relative; 
+        }
+
+        #drawingCanvas {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
+            border: 1px solid #4b5563; 
+            /* Width and height attributes will be set by JS to 1920x1080 */
+            /* CSS max-width/height removed to allow native size with scrolling */
+        }
+
+
+        .control-panel {
+            width: 24rem; 
+            background-color: #111827; 
+            padding: 1rem; 
+            box-shadow: -5px 0 15px -3px rgba(0, 0, 0, 0.1); 
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem; 
+            border-left: 1px solid #374151; 
+            max-height: 100%; 
+            overflow-y: auto; 
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; 
+            z-index: 10; 
+            font-family: 'Montserrat', sans-serif;
+        }
+
         .section { display: flex; flex-direction: column; gap: 0.75rem; }
-        .section-title { font-size: 1.1rem; font-weight: 600; color: #9ca3af; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; margin-bottom: 0.2rem; font-family: 'Montserrat', sans-serif; }
+        .section-title {
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            color: #9ca3af; 
+            border-bottom: 1px solid #374151; 
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.2rem; 
+            font-family: 'Montserrat', sans-serif;
+        }
+
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 0.5rem; } 
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.15s ease-in-out; cursor: pointer; border: 1px solid #4b5563; font-size: 0.8rem; color: #d1d5db; background-color: #374151; white-space: nowrap; font-family: 'Montserrat', sans-serif !important; }
+
+        .btn {
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem; 
+            padding: 0.5rem 0.75rem; 
+            border-radius: 0.375rem; 
+            font-weight: 500; 
+            transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.15s ease-in-out;
+            cursor: pointer;
+            border: 1px solid #4b5563; 
+            font-size: 0.8rem; 
+            color: #d1d5db; 
+            background-color: #374151; 
+            white-space: nowrap; 
+            font-family: 'Montserrat', sans-serif !important; 
+        }
         .btn i { font-size: 0.9em; } 
-        .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); background-color: #4b5563; border-color: #6b7280;}
-        .btn:active:not(:disabled) { transform: translateY(0px); box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); background-color: #2d3748; }
-        .btn.active-tool, .btn.active-layer-control { background-color: #2563eb !important; color: white !important; border-color: #3b82f6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
+
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #4b5563; 
+            border-color: #6b7280;
+        }
+        .btn:active:not(:disabled) {
+            transform: translateY(0px);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+            background-color: #2d3748; 
+        }
+        .btn.active-tool, .btn.active-layer-control { 
+            background-color: #2563eb !important; 
+            color: white !important;
+            border-color: #3b82f6 !important; 
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); 
+        }
         .btn.active-tool:hover, .btn.active-layer-control:hover { background-color: #1d4ed8 !important; }
         .btn-primary { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         .btn-primary:hover:not(:disabled) { background-color: #2563eb; border-color: #2563eb;}
@@ -57,7 +187,9 @@
         .btn-danger:hover:not(:disabled) { background-color: #dc2626; border-color: #dc2626; }
         .btn-danger:active:not(:disabled) { background-color: #b91c1c; }
         .btn:disabled, .btn.btn-disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-        label.btn { display: inline-flex; } #loadInput { display: none; }
+        label.btn { display: inline-flex; }
+        #loadInput { display: none; }
+
         .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
         .form-label { font-size: 0.8rem; font-weight: 500; color: #9ca3af; font-family: 'Montserrat', sans-serif; }
         .form-label span { color: #e5e7eb; } 
@@ -71,6 +203,7 @@
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.25rem; }
         input[type="color"]::-moz-color-swatch { border: none; border-radius: 0.25rem; }
+
         .footer { padding: 0.75rem; background-color: #1f2937; color: #6b7280; text-align: center; font-size: 0.75rem; border-top: 1px solid #374151; flex-shrink: 0; font-family: 'Montserrat', sans-serif;}
         .hidden { display: none !important; }
         #loadingIndicator { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
@@ -87,6 +220,7 @@
         .modal-button-container { display: flex; justify-content: flex-end; margin-top: 1rem; }
         .modal-button { background-color: #3b82f6; color: white; font-weight: 500; padding: 0.625rem 1.25rem; border-radius: 0.375rem; border: 1px solid #3b82f6; font-family: 'Montserrat', sans-serif !important; }
         .modal-button:hover { background-color: #2563eb; border-color: #2563eb; }
+
         .layers-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 180px; overflow-y: auto; border: 1px solid #374151; border-radius: 0.375rem; padding: 0.5rem; }
         .layer-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 0.25rem; background-color: #1f2937; border: 1px solid #374151; cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease; }
         .layer-item:hover { background-color: #2d3748; }
@@ -101,12 +235,45 @@
         .layer-opacity-control .form-label { font-size: 0.8rem; }
         .layer-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
         .layer-actions .btn { flex-grow: 1; min-width: 80px; } 
+
         ::-webkit-scrollbar { width: 0.5rem; height: 0.5rem; } 
         ::-webkit-scrollbar-track { background: #1f2937; }
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 0.25rem; }
         ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
-        @media (max-width: 900px) { .header-title { font-size: 1.1rem; } .header-buttons .btn span { display: none; } .header-buttons .btn i { margin-right: 0; } .header-buttons .btn { padding: 0.5rem; } .control-panel { position: absolute; right: 0; top: 0; bottom: 0; transform: translateX(100%); border-left: 1px solid #374151; box-shadow: -2px 0 10px rgba(0,0,0,0.3); width: 280px; } .control-panel.open { transform: translateX(0); } .control-panel-toggle { display: block; } }
-        @media (max-width: 480px) { .header-buttons { gap: 0.25rem; } .header-buttons .btn { padding: 0.4rem; font-size: 0.7rem; } .header-buttons .btn i { font-size: 0.8em; } .control-panel { width: calc(100% - 40px); max-width: 280px; } .section-title { font-size: 1rem; } .form-label { font-size: 0.75rem; } .layer-name, .layer-name-input { font-size: 0.75rem; } }
+
+        @media (max-width: 900px) { 
+            .header-title { font-size: 1.1rem; }
+            .header-buttons .btn span { display: none; } 
+            .header-buttons .btn i { margin-right: 0; } 
+            .header-buttons .btn { padding: 0.5rem; } 
+
+
+            .control-panel {
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(100%); 
+                border-left: 1px solid #374151;
+                box-shadow: -2px 0 10px rgba(0,0,0,0.3); 
+                width: 280px; 
+            }
+            .control-panel.open {
+                transform: translateX(0);
+            }
+            .control-panel-toggle {
+                display: block; 
+            }
+        }
+         @media (max-width: 480px) { 
+            .header-buttons { gap: 0.25rem; }
+            .header-buttons .btn { padding: 0.4rem; font-size: 0.7rem; }
+            .header-buttons .btn i { font-size: 0.8em; }
+            .control-panel { width: calc(100% - 40px); max-width: 280px; } 
+            .section-title { font-size: 1rem; }
+            .form-label { font-size: 0.75rem; }
+            .layer-name, .layer-name-input { font-size: 0.75rem; }
+         }
     </style>
 
     <header class="header">
@@ -116,7 +283,7 @@
         <div class="header-buttons">
             <button id="saveBtn" class="btn" title="Save (Ctrl + S)"><i class="fas fa-save"></i> <span>Save</span></button>
             <label for="loadInput" class="btn" title="Load (Ctrl + O)"><i class="fas fa-folder-open"></i> <span>Load</span></label>
-            <input type="file" id="loadInput" accept=".drz,.svg"> 
+            <input type="file" id="loadInput" accept=".drz,.svg,.psd,.clip"> 
             <button id="exportMp4Btn" class="btn btn-primary" title="Export MP4 (Ctrl + E)"><i class="fas fa-file-video"></i> <span>Export MP4</span></button>
             <button id="exportGifBtn" class="btn btn-primary" title="Export GIF"><i class="fas fa-file-image"></i> <span>Export GIF</span></button>
             <button id="clearActiveLayerBtn" class="btn btn-danger" title="Clear Active Layer"><i class="fas fa-eraser"></i> <span>Clear Layer</span></button>
@@ -145,13 +312,6 @@
                 <div class="form-group">
                     <label for="strokeColor" class="form-label">Stroke Color</label>
                     <input type="color" id="strokeColor" value="#000000">
-                </div>
-                 <div class="form-group">
-                    <label for="pointDistanceThreshold" class="form-label">Point Sampling (Real-time): <span id="pointDistanceThresholdValue">4</span></label>
-                    <input type="range" id="pointDistanceThreshold" min="1" max="20" value="4" title="Lower=Smoother during drawing, Higher=Fewer points during drawing">
-                </div>
-                <div class="form-group"> <label for="rdpTolerance" class="form-label">Simplification Tolerance (Post-draw): <span id="rdpToleranceValue">1</span></label>
-                    <input type="range" id="rdpTolerance" min="0.1" max="10" value="1" step="0.1" title="Lower=More detail, Higher=More simplification after stroke is finished">
                 </div>
             </div>
             
@@ -206,7 +366,7 @@
     </div>
     
     <footer class="footer">
-        Created by Bixrail (Quadtree & Compression Optimized)
+        Created by Bixrail
     </footer>
 
     <script>
@@ -216,47 +376,46 @@
 
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
-        // ... (other DOM element getters remain the same) ...
         const penToolBtn = document.getElementById('penTool');
         const eraserToolBtn = document.getElementById('eraserTool');
+        // Hand Tool and Reset View Button elements removed
+
         const strokeSizeSlider = document.getElementById('strokeSize');
         const strokeSizeValue = document.getElementById('strokeSizeValue');
         const strokeColorPicker = document.getElementById('strokeColor');
         const clearActiveLayerBtn = document.getElementById('clearActiveLayerBtn');
         const clearAllLayersBtn = document.getElementById('clearAllLayersBtn');
-        const pointDistanceThresholdSlider = document.getElementById('pointDistanceThreshold');
-        const pointDistanceThresholdValue = document.getElementById('pointDistanceThresholdValue');
-        const rdpToleranceSlider = document.getElementById('rdpTolerance');
-        const rdpToleranceValue = document.getElementById('rdpToleranceValue');
+
         const animationSliders = {
             wiggleIntensity: { slider: document.getElementById('wiggleIntensity'), valueEl: document.getElementById('wiggleIntensityValue'), suffix: '' },
             breathingStroke: { slider: document.getElementById('breathingStroke'), valueEl: document.getElementById('breathingStrokeValue'), suffix: '' },
             shakeIntensity: { slider: document.getElementById('shakeIntensity'), valueEl: document.getElementById('shakeIntensityValue'), suffix: '' },
             animationSpeed: { slider: document.getElementById('animationSpeed'), valueEl: document.getElementById('animationSpeedValue'), suffix: 'x' }
         };
+
         const saveBtn = document.getElementById('saveBtn');
         const loadInput = document.getElementById('loadInput');
         const exportMp4Btn = document.getElementById('exportMp4Btn'); 
         const exportGifBtn = document.getElementById('exportGifBtn'); 
         const loadingIndicator = document.getElementById('loadingIndicator');
         const loadingText = document.getElementById('loadingText'); 
+        
         const messageModal = document.getElementById('messageModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
+
         const layersListContainer = document.getElementById('layersList');
         const addLayerBtn = document.getElementById('addLayerBtn');
         const selectedLayerOpacityControl = document.getElementById('selectedLayerOpacityControl');
         const layerOpacitySlider = document.getElementById('layerOpacity');
         const layerOpacityValue = document.getElementById('layerOpacityValue');
+        
         const controlPanel = document.getElementById('controlPanel');
         const controlPanelToggle = document.getElementById('controlPanelToggle');
-        const canvasContainer = document.getElementById('canvasContainer');
-        const undoBtn = document.getElementById('undoBtn');
-        const redoBtn = document.getElementById('redoBtn');
-
+        const canvasContainer = document.getElementById('canvasContainer'); // Get canvas container for panel close logic
 
         let isDrawing = false;
-        let currentTool = 'pen'; 
+        let currentTool = 'pen'; // 'pen', 'eraser' (hand removed)
         let currentStrokeSize = 10;
         let currentStrokeColor = '#000000';
         
@@ -269,614 +428,1111 @@
         let undoStack = [];
         let redoStack = [];
 
-        const WORLD_WIDTH = 1920; 
-        const WORLD_HEIGHT = 1080; 
-        let MIN_POINT_DISTANCE_SQ = 4 * 4;
-        let RDP_TOLERANCE = 1;
+        const WORLD_WIDTH = 1920; // FHD
+        const WORLD_HEIGHT = 1080; // FHD
 
-        let viewTransform = { scale: 1, offsetX: 0, offsetY: 0 };
+        // viewTransform is simplified as zoom/pan are removed. Scale is 1, offsets are 0.
+        let viewTransform = {
+            scale: 1,
+            offsetX: 0, 
+            offsetY: 0  
+        };
+        // Panning related variables removed
+        // Zoom related constants removed (MIN_ZOOM, MAX_ZOOM)
+
         const EXPORT_WIDTH = 1920; 
         const EXPORT_HEIGHT = 1080; 
-
-        // --- Quadtree Implementation ---
-        // A simple Quadtree for 2D spatial partitioning.
-        // Adapted from various sources, e.g., https://gamedevelopment.tutsplus.com/tutorials/quick-tip-use-quadtrees-to-detect-likely-collisions-in-2d-space--gamedev-374
-        class Quadtree {
-            constructor(bounds, maxObjects = 10, maxLevels = 4, level = 0) {
-                this.bounds = bounds; // { x, y, width, height }
-                this.maxObjects = maxObjects;
-                this.maxLevels = maxLevels;
-                this.level = level;
-                this.objects = []; // Stores { bbox: {minX, minY, maxX, maxY}, item: actualStrokeObject }
-                this.nodes = []; // Four sub-quadrants (Quadtree nodes)
-            }
-
-            clear() {
-                this.objects = [];
-                this.nodes = [];
-            }
-
-            split() {
-                const nextLevel = this.level + 1;
-                const subWidth = this.bounds.width / 2;
-                const subHeight = this.bounds.height / 2;
-                const x = this.bounds.x;
-                const y = this.bounds.y;
-
-                // Top right node
-                this.nodes[0] = new Quadtree({ x: x + subWidth, y: y, width: subWidth, height: subHeight }, this.maxObjects, this.maxLevels, nextLevel);
-                // Top left node
-                this.nodes[1] = new Quadtree({ x: x, y: y, width: subWidth, height: subHeight }, this.maxObjects, this.maxLevels, nextLevel);
-                // Bottom left node
-                this.nodes[2] = new Quadtree({ x: x, y: y + subHeight, width: subWidth, height: subHeight }, this.maxObjects, this.maxLevels, nextLevel);
-                // Bottom right node
-                this.nodes[3] = new Quadtree({ x: x + subWidth, y: y + subHeight, width: subWidth, height: subHeight }, this.maxObjects, this.maxLevels, nextLevel);
-            }
-
-            getIndex(rect) { // rect is a stroke's bbox { minX, minY, maxX, maxY }
-                let index = -1;
-                const verticalMidpoint = this.bounds.x + (this.bounds.width / 2);
-                const horizontalMidpoint = this.bounds.y + (this.bounds.height / 2);
-
-                // Object can completely fit within the top quadrants
-                const topQuadrant = (rect.minY < horizontalMidpoint && rect.maxY < horizontalMidpoint);
-                // Object can completely fit within the bottom quadrants
-                const bottomQuadrant = (rect.minY > horizontalMidpoint);
-
-                // Object can completely fit within the left quadrants
-                if (rect.minX < verticalMidpoint && rect.maxX < verticalMidpoint) {
-                    if (topQuadrant) index = 1; // Top left
-                    else if (bottomQuadrant) index = 2; // Bottom left
-                }
-                // Object can completely fit within the right quadrants
-                else if (rect.minX > verticalMidpoint) {
-                    if (topQuadrant) index = 0; // Top right
-                    else if (bottomQuadrant) index = 3; // Bottom right
-                }
-                return index;
-            }
-
-            insert(objData) { // objData is { bbox: strokeBbox, item: strokeObject }
-                if (this.nodes.length) {
-                    const index = this.getIndex(objData.bbox);
-                    if (index !== -1) {
-                        this.nodes[index].insert(objData);
-                        return;
-                    }
-                }
-
-                this.objects.push(objData);
-
-                if (this.objects.length > this.maxObjects && this.level < this.maxLevels) {
-                    if (!this.nodes.length) {
-                        this.split();
-                    }
-                    let i = 0;
-                    while (i < this.objects.length) {
-                        const index = this.getIndex(this.objects[i].bbox);
-                        if (index !== -1) {
-                            this.nodes[index].insert(this.objects.splice(i, 1)[0]);
-                        } else {
-                            i++;
-                        }
-                    }
-                }
-            }
-
-            retrieve(rect) { // rect is the query area (e.g., eraser bbox)
-                let returnObjects = [...this.objects];
-                const index = this.getIndex(rect);
-
-                if (this.nodes.length) { // If this node has subnodes
-                    // If the query rect fits entirely in a subquadrant
-                    if (index !== -1) {
-                        returnObjects = returnObjects.concat(this.nodes[index].retrieve(rect));
-                    } else { // Query rect spans multiple quadrants, check all
-                        for (let i = 0; i < this.nodes.length; i++) {
-                            returnObjects = returnObjects.concat(this.nodes[i].retrieve(rect));
-                        }
-                    }
-                }
-                // Deduplicate (important if an object is in this.objects and also returned by a subnode if it couldn't fit perfectly)
-                // For simplicity, we assume objects are only stored at one level if they can't fit deeper.
-                // A more robust retrieve would handle objects spanning boundaries more carefully or ensure they are only in parent if they span.
-                // For now, this should be okay as we filter by actual intersection later.
-                return returnObjects;
-            }
-        }
-
 
         function generateLayerId() { return Date.now() + Math.random().toString(36).substr(2, 9); }
         function getActiveLayer() { return layers.find(layer => layer.id === activeLayerId); }
 
-        function rebuildLayerQuadtree(layer) {
-            if (!layer) return;
-            layer.quadtree.clear();
-            layer.strokes.forEach(stroke => {
-                if (stroke.bbox) { // Ensure stroke has a bbox
-                    layer.quadtree.insert({ bbox: stroke.bbox, item: stroke });
-                }
-            });
-        }
-
-
-        // --- Ramer-Douglas-Peucker Algorithm (no changes) ---
-        function getPerpendicularDistance(point, lineStart, lineEnd) {
-            const dx = lineEnd.x - lineStart.x; const dy = lineEnd.y - lineStart.y;
-            if (dx === 0 && dy === 0) return Math.sqrt(Math.pow(point.x - lineStart.x, 2) + Math.pow(point.y - lineStart.y, 2));
-            const t = ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / (dx * dx + dy * dy);
-            let closestX, closestY;
-            if (t < 0) { closestX = lineStart.x; closestY = lineStart.y; }
-            else if (t > 1) { closestX = lineEnd.x; closestY = lineEnd.y; }
-            else { closestX = lineStart.x + t * dx; closestY = lineStart.y + t * dy; }
-            return Math.sqrt(Math.pow(point.x - closestX, 2) + Math.pow(point.y - closestY, 2));
-        }
-        function rdpSimplify(points, tolerance) {
-            if (points.length < 3) return points; let dmax = 0; let index = 0; const end = points.length - 1;
-            for (let i = 1; i < end; i++) { const d = getPerpendicularDistance(points[i], points[0], points[end]); if (d > dmax) { index = i; dmax = d; } }
-            if (dmax > tolerance) { const recResults1 = rdpSimplify(points.slice(0, index + 1), tolerance); const recResults2 = rdpSimplify(points.slice(index), tolerance); return recResults1.slice(0, recResults1.length - 1).concat(recResults2);
-            } else return [points[0], points[end]];
-        }
-
-        // --- Bounding Box Calculation (no changes) ---
-        function calculateStrokeBoundingBox(strokePoints, strokeSize) { // Added strokeSize parameter
-            if (!strokePoints || strokePoints.length === 0) return null;
-            let minX = strokePoints[0].x, maxX = strokePoints[0].x, minY = strokePoints[0].y, maxY = strokePoints[0].y;
-            for (let i = 1; i < strokePoints.length; i++) { minX = Math.min(minX, strokePoints[i].x); maxX = Math.max(maxX, strokePoints[i].x); minY = Math.min(minY, strokePoints[i].y); maxY = Math.max(maxY, strokePoints[i].y); }
-            const halfSize = (strokeSize || currentStrokeSize) / 2; 
-            return { minX: minX - halfSize, minY: minY - halfSize, maxX: maxX + halfSize, maxY: maxY + halfSize };
-        }
-        function updateStrokeBoundingBox(stroke) {
-            if (stroke && stroke.points) {
-                const halfSize = stroke.size / 2; if (!stroke.points || stroke.points.length === 0) { stroke.bbox = null; return; }
-                let minX = stroke.points[0].x, maxX = stroke.points[0].x, minY = stroke.points[0].y, maxY = stroke.points[0].y;
-                for (let i = 1; i < stroke.points.length; i++) { minX = Math.min(minX, stroke.points[i].x); maxX = Math.max(maxX, stroke.points[i].x); minY = Math.min(minY, stroke.points[i].y); maxY = Math.max(maxY, stroke.points[i].y); }
-                stroke.bbox = { minX: minX - halfSize, minY: minY - halfSize, maxX: maxX + halfSize, maxY: maxY + halfSize };
-            }
-        }
-        function doBoundingBoxesIntersect(box1, box2) { if (!box1 || !box2) return false; return box1.minX <= box2.maxX && box1.maxX >= box2.minX && box1.minY <= box2.maxY && box1.maxY >= box2.minY; }
-
-        // --- Layer Initialization and Management ---
-        function initializeLayerCanvas(layer) {
-            if (!layer.offscreenCanvas) { layer.offscreenCanvas = document.createElement('canvas'); layer.offscreenCtx = layer.offscreenCanvas.getContext('2d'); }
-            layer.offscreenCanvas.width = WORLD_WIDTH; layer.offscreenCanvas.height = WORLD_HEIGHT;
-            layer.needsFullRedraw = true;
-            // Initialize Quadtree for the layer
-            if (!layer.quadtree) {
-                layer.quadtree = new Quadtree({ x: 0, y: 0, width: WORLD_WIDTH, height: WORLD_HEIGHT });
-            }
+        function setActiveToolButton(activeBtn) {
+            [penToolBtn, eraserToolBtn].forEach(btn => btn.classList.remove('active-tool')); // handToolBtn removed
+            if (activeBtn) activeBtn.classList.add('active-tool');
+            updateCanvasCursor(); 
         }
         
-        function createNewLayer(nameSuffix = layers.length + 1, strokesData = [], customAnimationSettings = null, isVisible = true, opacity = 1, isActive = false) {
-            const defaultAnimSettings = {};
-            for (const key in animationSliders) defaultAnimSettings[key] = parseFloat(animationSliders[key].slider.defaultValue || animationSliders[key].slider.value);
-            
-            const newLayer = {
-                id: generateLayerId(), name: `Layer ${nameSuffix}`, strokes: [],
-                animationSettings: customAnimationSettings || defaultAnimSettings,
-                isVisible: isVisible, opacity: opacity, isActive: isActive,
-                offscreenCanvas: null, offscreenCtx: null, needsFullRedraw: true,
-                quadtree: new Quadtree({ x: 0, y: 0, width: WORLD_WIDTH, height: WORLD_HEIGHT }) // Initialize Quadtree
-            };
-            
-            // Process strokesData to ensure bbox and add to layer.strokes and quadtree
-            strokesData.forEach(sData => {
-                const stroke = { ...sData, bbox: sData.bbox || calculateStrokeBoundingBox(sData.points, sData.size) };
-                newLayer.strokes.push(stroke);
-                if (stroke.bbox) newLayer.quadtree.insert({ bbox: stroke.bbox, item: stroke });
-            });
-
-            initializeLayerCanvas(newLayer); // This also sets up offscreen canvas
-            return newLayer;
-        }
-
-        function addLayer() {
-            saveStateForUndo(); const newLayer = createNewLayer(layers.length + 1);
-            const activeLayerIndex = layers.findIndex(l => l.id === activeLayerId);
-            if (activeLayerIndex !== -1 && activeLayerIndex < layers.length -1) layers.splice(activeLayerIndex + 1, 0, newLayer);
-            else layers.push(newLayer); 
-            setActiveLayer(newLayer.id); renderLayersList();
-        }
-
-        function setActiveLayer(layerId) {
-            const previouslyActiveLayer = getActiveLayer(); if (previouslyActiveLayer) previouslyActiveLayer.isActive = false;
-            activeLayerId = layerId; const currentActiveLayer = getActiveLayer();
-            if (currentActiveLayer) {
-                currentActiveLayer.isActive = true; layerOpacitySlider.value = currentActiveLayer.opacity * 100;
-                layerOpacityValue.textContent = Math.round(currentActiveLayer.opacity * 100);
-                selectedLayerOpacityControl.classList.remove('hidden');
-            } else selectedLayerOpacityControl.classList.add('hidden');
-            renderLayersList(); updateAnimationSlidersForActiveLayer();
-        }
-        
-        layerOpacitySlider.addEventListener('input', (e) => { const activeLayer = getActiveLayer(); if (activeLayer) { activeLayer.opacity = parseFloat(e.target.value) / 100; layerOpacityValue.textContent = e.target.value; } });
-        pointDistanceThresholdSlider.addEventListener('input', (e) => { const value = parseInt(e.target.value); MIN_POINT_DISTANCE_SQ = value * value; pointDistanceThresholdValue.textContent = value; });
-        rdpToleranceSlider.addEventListener('input', (e) => { RDP_TOLERANCE = parseFloat(e.target.value); rdpToleranceValue.textContent = RDP_TOLERANCE; });
-        function setActiveToolButton(activeBtn) { [penToolBtn, eraserToolBtn].forEach(btn => btn.classList.remove('active-tool')); if (activeBtn) activeBtn.classList.add('active-tool'); updateCanvasCursor(); }
-        function updateCanvasCursor() { /* ... (no changes) ... */ 
-            const size = Math.max(2, currentStrokeSize); let cursorSVG;
-            if (currentTool === 'pen') { cursorSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2}" fill="rgba(0,0,0,0.5)"/></svg>`; canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(cursorSVG)}') ${size/2} ${size/2}, auto`;
-            } else if (currentTool === 'eraser') { const outlineWidth = Math.max(1, Math.min(2, size / 10)); cursorSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2 - outlineWidth/2}" fill="rgba(255,255,255,0.5)" stroke="rgba(0,0,0,0.7)" stroke-width="${outlineWidth}"/></svg>`; canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(cursorSVG)}') ${size/2} ${size/2}, auto`;
-            } else { canvas.style.cursor = 'default'; }
+        function updateCanvasCursor() {
+            const size = Math.max(2, currentStrokeSize); // viewTransform.scale removed, assumed to be 1
+            let cursorSVG;
+            if (currentTool === 'pen') {
+                cursorSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2}" fill="rgba(0,0,0,0.5)"/></svg>`;
+                canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(cursorSVG)}') ${size/2} ${size/2}, auto`;
+            } else if (currentTool === 'eraser') {
+                const outlineWidth = Math.max(1, Math.min(2, size / 10)); 
+                cursorSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2 - outlineWidth/2}" fill="rgba(255,255,255,0.5)" stroke="rgba(0,0,0,0.7)" stroke-width="${outlineWidth}"/></svg>`;
+                canvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(cursorSVG)}') ${size/2} ${size/2}, auto`;
+            } else { // Hand tool removed
+                canvas.style.cursor = 'default';
+            }
         }
 
         function saveStateForUndo() {
-            const serializableLayers = layers.map(layer => {
-                const { offscreenCanvas, offscreenCtx, quadtree, ...serializableLayer } = layer; // Exclude quadtree
-                return serializableLayer;
-            });
-            const stateToSave = { layers: serializableLayers, viewTransform: { ...viewTransform }, activeLayerId: activeLayerId };
-            try {
-                const jsonString = JSON.stringify(stateToSave);
-                const compressedState = pako.deflate(jsonString); // Compress
-                undoStack.push(compressedState);
-                if (undoStack.length > 30) undoStack.shift();
-                redoStack = []; 
-                updateUndoRedoButtons();
-            } catch (error) {
-                console.error("Error saving state for undo (compression):", error);
-                showModal("Undo Error", "Could not save current state for undo. " + error.message);
-            }
+            // viewTransform is now static, but kept for consistency with existing save/load format
+            const state = { layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } };
+            undoStack.push(state);
+            if (undoStack.length > 30) undoStack.shift();
+            redoStack = []; 
+            updateUndoRedoButtons();
         }
         
-        function updateUndoRedoButtons() { undoBtn.disabled = undoStack.length === 0; redoBtn.disabled = redoStack.length === 0; undoBtn.classList.toggle('btn-disabled', undoBtn.disabled); redoBtn.classList.toggle('btn-disabled', redoBtn.disabled); }
-        function showModal(title, message, customButtons = null, isCustom = false) { /* ... (no changes) ... */ 
-            modalTitle.textContent = title; modalMessage.innerHTML = message; 
-            const buttonContainer = messageModal.querySelector('.modal-button-container'); buttonContainer.innerHTML = ''; 
-            if (isCustom && customButtons && customButtons.length > 0) { customButtons.forEach(btnConfig => { const button = document.createElement('button'); button.textContent = btnConfig.text; button.className = `btn modal-button ${btnConfig.class || 'btn-primary'}`; button.onclick = btnConfig.action; buttonContainer.appendChild(button); });
-            } else { const closeButton = document.createElement('button'); closeButton.className = 'btn modal-button btn-primary'; closeButton.textContent = 'Close'; closeButton.onclick = () => closeModal(messageModal); buttonContainer.appendChild(closeButton); }
+        function updateUndoRedoButtons() {
+            undoBtn.disabled = undoStack.length === 0;
+            redoBtn.disabled = redoStack.length === 0;
+            undoBtn.classList.toggle('btn-disabled', undoBtn.disabled);
+            redoBtn.classList.toggle('btn-disabled', redoBtn.disabled);
+        }
+
+        function showModal(title, message, customButtons = null, isCustom = false) {
+            modalTitle.textContent = title;
+            modalMessage.innerHTML = message; 
+            const buttonContainer = messageModal.querySelector('.modal-button-container');
+            buttonContainer.innerHTML = ''; 
+            if (isCustom && customButtons && customButtons.length > 0) {
+                customButtons.forEach(btnConfig => {
+                    const button = document.createElement('button');
+                    button.textContent = btnConfig.text;
+                    button.className = `btn modal-button ${btnConfig.class || 'btn-primary'}`;
+                    button.onclick = btnConfig.action;
+                    buttonContainer.appendChild(button);
+                });
+            } else {
+                const closeButton = document.createElement('button');
+                closeButton.className = 'btn modal-button btn-primary';
+                closeButton.textContent = 'Close';
+                closeButton.onclick = () => closeModal(messageModal);
+                buttonContainer.appendChild(closeButton);
+            }
             messageModal.classList.remove('hidden');
         }
+
         function closeModal(modalElement) { modalElement.classList.add('hidden'); }
-        messageModal.addEventListener('click', (event) => { if (event.target === messageModal || event.target.classList.contains('modal-button')) { if (!event.target.classList.contains('btn-danger') && !event.target.classList.contains('btn-primary') && event.target.textContent !== 'Delete' && event.target.textContent !== 'Clear Layer' && event.target.textContent !== 'Clear All') { closeModal(messageModal); } } });
-        function setupCanvasDimensions() { canvas.width = WORLD_WIDTH; canvas.height = WORLD_HEIGHT; layers.forEach(layer => { initializeLayerCanvas(layer); }); }
-        window.addEventListener('resize', () => {});
-        controlPanelToggle.addEventListener('click', () => { controlPanel.classList.toggle('open'); controlPanelToggle.innerHTML = controlPanel.classList.contains('open') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>'; });
-        if (canvasContainer) { canvasContainer.addEventListener('click', (event) => { if (controlPanel.classList.contains('open') && window.innerWidth <= 900) { if (event.target === canvasContainer || event.target === canvas) { controlPanel.classList.remove('open'); controlPanelToggle.innerHTML = '<i class="fas fa-bars"></i>'; } } }); }
-        function renderLayersList() { /* ... (no changes) ... */ 
-            layersListContainer.innerHTML = ''; if (layers.length === 0) { layersListContainer.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">No layers yet.</p>'; selectedLayerOpacityControl.classList.add('hidden'); return; }
-            [...layers].reverse().forEach((layer, R_index) => { const index = layers.length - 1 - R_index; const item = document.createElement('div'); item.className = `layer-item ${layer.id === activeLayerId ? 'active-layer' : ''}`; item.dataset.layerId = layer.id; const visibilityBtn = document.createElement('button'); visibilityBtn.className = 'btn btn-sm'; visibilityBtn.innerHTML = `<i class="fas ${layer.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>`; visibilityBtn.title = layer.isVisible ? "Hide" : "Show"; visibilityBtn.onclick = (e) => { e.stopPropagation(); toggleLayerVisibility(layer.id); }; const nameSpan = document.createElement('span'); nameSpan.className = 'layer-name'; nameSpan.textContent = layer.name; nameSpan.title = "Rename"; nameSpan.ondblclick = (e) => { e.stopPropagation(); makeLayerNameEditable(layer.id, nameSpan); }; const controlsDiv = document.createElement('div'); controlsDiv.className = 'layer-controls'; const upBtn = document.createElement('button'); upBtn.className = 'btn btn-sm'; upBtn.innerHTML = '<i class="fas fa-arrow-up"></i>'; upBtn.title = "Up"; upBtn.disabled = index === layers.length - 1; upBtn.onclick = (e) => { e.stopPropagation(); moveLayer(layer.id, 'up'); }; if(upBtn.disabled) upBtn.classList.add('btn-disabled'); const downBtn = document.createElement('button'); downBtn.className = 'btn btn-sm'; downBtn.innerHTML = '<i class="fas fa-arrow-down"></i>'; downBtn.title = "Down"; downBtn.disabled = index === 0; downBtn.onclick = (e) => { e.stopPropagation(); moveLayer(layer.id, 'down'); }; if(downBtn.disabled) downBtn.classList.add('btn-disabled'); const deleteBtn = document.createElement('button'); deleteBtn.className = 'btn btn-sm btn-danger'; deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>'; deleteBtn.title = "Delete"; deleteBtn.onclick = (e) => { e.stopPropagation(); deleteLayer(layer.id); }; controlsDiv.append(upBtn, downBtn, deleteBtn); item.append(visibilityBtn, nameSpan, controlsDiv); item.onclick = () => setActiveLayer(layer.id); layersListContainer.appendChild(item); });
-            const currentActiveLayer = getActiveLayer(); if (currentActiveLayer) { selectedLayerOpacityControl.classList.remove('hidden'); layerOpacitySlider.value = currentActiveLayer.opacity * 100; layerOpacityValue.textContent = Math.round(currentActiveLayer.opacity * 100); } else selectedLayerOpacityControl.classList.add('hidden');
-        }
-        function makeLayerNameEditable(layerId, nameSpan) { /* ... (no changes) ... */ 
-            const layer = layers.find(l => l.id === layerId); if (!layer) return; const input = document.createElement('input'); input.type = 'text'; input.className = 'layer-name-input'; input.value = layer.name; nameSpan.replaceWith(input); input.focus(); input.select();
-            const saveName = () => { saveStateForUndo(); layer.name = input.value.trim() || `Layer ${layers.findIndex(l => l.id === layerId) + 1}`; input.replaceWith(nameSpan); nameSpan.textContent = layer.name; layer.needsFullRedraw = true; };
-            input.onblur = saveName; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); else if (e.key === 'Escape') { input.value = layer.name; input.blur(); }};
-        }
-        function toggleLayerVisibility(layerId) { saveStateForUndo(); const layer = layers.find(l => l.id === layerId); if (layer) layer.isVisible = !layer.isVisible; renderLayersList(); }
-        function deleteLayer(layerId) { /* ... (no changes, Quadtree cleared in applyState or when layer is gone) ... */ 
-            if (layers.length <= 1) { showModal("Action Denied", "Cannot delete the last layer."); return; } const layerToDelete = layers.find(l => l.id === layerId); if (!layerToDelete) return;
-            showModal("Confirm Deletion", `Delete layer "${layerToDelete.name}"?`,  [{ text: "Delete", class: 'btn-danger', action: () => { saveStateForUndo(); if (layerToDelete.offscreenCanvas) { layerToDelete.offscreenCanvas.width = 0; layerToDelete.offscreenCanvas = null; layerToDelete.offscreenCtx = null; } if (layerToDelete.quadtree) layerToDelete.quadtree.clear(); layers = layers.filter(l => l.id !== layerId); if (activeLayerId === layerId) setActiveLayer(layers.length > 0 ? layers[layers.length - 1].id : null); renderLayersList(); closeModal(messageModal); }}, { text: "Cancel", class: 'btn', action: () => closeModal(messageModal) }], true);
-        }
-        function moveLayer(layerId, direction) { /* ... (no changes) ... */ 
-            saveStateForUndo(); const index = layers.findIndex(l => l.id === layerId); if (index === -1) return;
-            if (direction === 'up' && index < layers.length - 1) { [layers[index], layers[index + 1]] = [layers[index + 1], layers[index]]; }
-            else if (direction === 'down' && index > 0) { [layers[index], layers[index - 1]] = [layers[index - 1], layers[index]]; }
-            renderLayersList(); 
-        }
-        function updateAnimationSlidersForActiveLayer() { /* ... (no changes) ... */ 
-            const activeLayer = getActiveLayer();
-            if (activeLayer) { for (const key in animationSliders) { const setting = activeLayer.animationSettings[key]; if (setting !== undefined) { animationSliders[key].slider.value = setting; animationSliders[key].valueEl.textContent = setting + (animationSliders[key].suffix || ''); } } }
-            else { for (const key in animationSliders) { animationSliders[key].slider.value = animationSliders[key].slider.defaultValue || 0; animationSliders[key].valueEl.textContent = (animationSliders[key].slider.defaultValue || 0) + (animationSliders[key].suffix || ''); } }
-        }
-        Object.values(animationSliders).forEach(item => { item.slider.addEventListener('input', (e) => { const activeLayer = getActiveLayer(); if (activeLayer) { const key = Object.keys(animationSliders).find(k => animationSliders[k].slider === e.target); if (key) { activeLayer.animationSettings[key] = parseFloat(e.target.value); item.valueEl.textContent = e.target.value + (item.suffix || ''); activeLayer.needsFullRedraw = true; } } }); });
-        function getCanvasMousePos(e) { /* ... (no changes) ... */ 
-            const rect = canvas.getBoundingClientRect(); let clientX, clientY;
-            if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; } else { clientX = e.clientX; clientY = e.clientY; }
-            return { x: (clientX - rect.left), y: (clientY - rect.top) };
-        }
-        const getTransformedMousePos = getCanvasMousePos;
-        canvas.addEventListener('touchstart', (e) => { if (e.touches.length === 1 && (currentTool === 'pen' || currentTool === 'eraser')) startDrawing(e); if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
-        canvas.addEventListener('touchmove', (e) => { if (e.touches.length === 1 && isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) { e.preventDefault(); draw(e); } }, { passive: false });
-        canvas.addEventListener('touchend', (e) => { if (e.touches.length < 1 && isDrawing) stopDrawing(e); });
-
-        function startDrawing(e) {
-            if (currentTool !== 'pen' && currentTool !== 'eraser') return;
-            const activeLayer = getActiveLayer(); if (!activeLayer || !activeLayer.isVisible) return; 
-            if (e.button !== 0 && e.type === 'mousedown') return; 
-            saveStateForUndo(); isDrawing = true; const { x, y } = getTransformedMousePos(e); lastX = x; lastY = y; 
-            if (currentTool === 'pen') {
-                const newStroke = { id: generateLayerId(), points: [{ x: x, y: y }], color: currentStrokeColor, size: currentStrokeSize, tool: currentTool, originalSize: currentStrokeSize, birthTime: time, bbox: null };
-                updateStrokeBoundingBox(newStroke); // Calculate initial bbox
-                activeLayer.strokes.push(newStroke);
-                // No need to add to quadtree yet, will be added in stopDrawing after RDP
+        messageModal.addEventListener('click', (event) => { 
+            if (event.target === messageModal || event.target.classList.contains('modal-button')) { 
+                if (!event.target.classList.contains('btn-danger') && !event.target.classList.contains('btn-primary') && event.target.textContent !== 'Delete' && event.target.textContent !== 'Clear Layer' && event.target.textContent !== 'Clear All') {
+                     closeModal(messageModal);
+                }
             }
-            activeLayer.needsFullRedraw = true;
+        });
+
+        // setDefaultViewTransform is no longer needed as view is fixed.
+        // resizeCanvas will set canvas to FHD and viewTransform is static.
+        function setupCanvasDimensions() {
+            canvas.width = WORLD_WIDTH;
+            canvas.height = WORLD_HEIGHT;
+            // viewTransform is already { scale: 1, offsetX: 0, offsetY: 0 }
+            // No need to adjust viewTransform based on canvas size anymore.
+            drawScene();
         }
+        
+        // Simplified resizeCanvas - it just ensures the fixed dimensions and redraws.
+        // The actual visual scaling/fitting is handled by CSS on canvas-container.
+        window.addEventListener('resize', () => {
+            // Canvas logical size remains fixed. Redraw if needed.
+            // The container's scrollbars or visual scaling will adjust.
+            drawScene(); 
+        });
+        
+        controlPanelToggle.addEventListener('click', () => {
+            controlPanel.classList.toggle('open');
+            controlPanelToggle.innerHTML = controlPanel.classList.contains('open') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+        });
 
-        function isPointInCircle(px, py, cx, cy, radius) { const dx = px - cx; const dy = py - cy; return dx * dx + dy * dy <= radius * radius; }
-
-        function draw(e) { // Eraser logic updated to use Quadtree
-            const activeLayer = getActiveLayer(); if (!isDrawing || !activeLayer || !activeLayer.isVisible) return;
-            const { x, y } = getTransformedMousePos(e); 
-            if (currentTool === 'eraser') {
-                const eraserRadius = currentStrokeSize / 2;
-                const eraserBBox = { minX: x - eraserRadius, minY: y - eraserRadius, maxX: x + eraserRadius, maxY: y + eraserRadius };
-                let erasedSomething = false;
-                
-                // Retrieve candidate strokes from Quadtree
-                const candidateObjects = activeLayer.quadtree.retrieve(eraserBBox);
-                const uniqueCandidateStrokes = [...new Set(candidateObjects.map(obj => obj.item))]; // Get unique stroke items
-
-                for (const stroke of uniqueCandidateStrokes) {
-                    // Additional check: ensure stroke is still in the layer.strokes array (might have been erased by a previous pass if eraser moves fast)
-                    if (!activeLayer.strokes.includes(stroke)) continue;
-
-                    if (stroke.tool === 'pen' && stroke.bbox && doBoundingBoxesIntersect(eraserBBox, stroke.bbox)) { 
-                        let hit = false;
-                        for (const p of stroke.points) {
-                            if (isPointInCircle(p.x, p.y, x, y, eraserRadius + stroke.size / 2)) { hit = true; break; }
-                        }
-                        if (hit) { 
-                            const strokeIndexInLayer = activeLayer.strokes.findIndex(s => s.id === stroke.id);
-                            if (strokeIndexInLayer > -1) {
-                                activeLayer.strokes.splice(strokeIndexInLayer, 1); 
-                                erasedSomething = true; 
-                            }
-                        }
+        // Mobile: Close control panel on canvas/container click
+        if (canvasContainer) {
+            canvasContainer.addEventListener('click', (event) => {
+                if (controlPanel.classList.contains('open') && window.innerWidth <= 900) {
+                    // Ensure the click is not on the panel itself or something inside it (though panel is aside)
+                    // This check is for clicks on canvasContainer or canvas
+                    if (event.target === canvasContainer || event.target === canvas) {
+                        controlPanel.classList.remove('open');
+                        controlPanelToggle.innerHTML = '<i class="fas fa-bars"></i>';
                     }
                 }
-                if (erasedSomething) {
-                    activeLayer.needsFullRedraw = true;
-                    rebuildLayerQuadtree(activeLayer); // Rebuild quadtree after erasures
+            });
+        }
+
+
+        function createNewLayer(nameSuffix = layers.length + 1, strokes = [], customAnimationSettings = null, isVisible = true, opacity = 1, isActive = false) {
+            const defaultAnimSettings = {};
+            for (const key in animationSliders) {
+                defaultAnimSettings[key] = parseFloat(animationSliders[key].slider.defaultValue || animationSliders[key].slider.value);
+            }
+            return {
+                id: generateLayerId(), name: `Layer ${nameSuffix}`, strokes: strokes,
+                animationSettings: customAnimationSettings || defaultAnimSettings,
+                isVisible: isVisible, opacity: opacity, isActive: isActive 
+            };
+        }
+
+        function addLayer() {
+            saveStateForUndo();
+            const newLayer = createNewLayer(layers.length + 1);
+            const activeLayerIndex = layers.findIndex(l => l.id === activeLayerId);
+            if (activeLayerIndex !== -1 && activeLayerIndex < layers.length -1) layers.splice(activeLayerIndex + 1, 0, newLayer);
+            else layers.push(newLayer); 
+            setActiveLayer(newLayer.id); 
+            renderLayersList();
+            updateAnimationSlidersForActiveLayer();
+        }
+
+        function setActiveLayer(layerId) {
+            const previouslyActiveLayer = getActiveLayer();
+            if (previouslyActiveLayer) previouslyActiveLayer.isActive = false;
+            activeLayerId = layerId;
+            const currentActiveLayer = getActiveLayer();
+            if (currentActiveLayer) {
+                currentActiveLayer.isActive = true;
+                layerOpacitySlider.value = currentActiveLayer.opacity * 100;
+                layerOpacityValue.textContent = Math.round(currentActiveLayer.opacity * 100);
+                selectedLayerOpacityControl.classList.remove('hidden');
+            } else selectedLayerOpacityControl.classList.add('hidden');
+            renderLayersList(); 
+            updateAnimationSlidersForActiveLayer();
+        }
+        
+        layerOpacitySlider.addEventListener('input', (e) => {
+            const activeLayer = getActiveLayer();
+            if (activeLayer) {
+                activeLayer.opacity = parseFloat(e.target.value) / 100;
+                layerOpacityValue.textContent = e.target.value;
+                drawScene(); 
+            }
+        });
+
+        function renderLayersList() {
+            layersListContainer.innerHTML = ''; 
+            if (layers.length === 0) {
+                layersListContainer.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">No layers yet.</p>';
+                selectedLayerOpacityControl.classList.add('hidden'); return;
+            }
+            [...layers].reverse().forEach((layer, R_index) => { 
+                const index = layers.length - 1 - R_index; 
+                const item = document.createElement('div');
+                item.className = `layer-item ${layer.id === activeLayerId ? 'active-layer' : ''}`;
+                item.dataset.layerId = layer.id;
+                const visibilityBtn = document.createElement('button');
+                visibilityBtn.className = 'btn btn-sm';
+                visibilityBtn.innerHTML = `<i class="fas ${layer.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+                visibilityBtn.title = layer.isVisible ? "Hide" : "Show";
+                visibilityBtn.onclick = (e) => { e.stopPropagation(); toggleLayerVisibility(layer.id); };
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'layer-name'; nameSpan.textContent = layer.name; nameSpan.title = "Rename";
+                nameSpan.ondblclick = (e) => { e.stopPropagation(); makeLayerNameEditable(layer.id, nameSpan); };
+                const controlsDiv = document.createElement('div'); controlsDiv.className = 'layer-controls';
+                const upBtn = document.createElement('button'); upBtn.className = 'btn btn-sm'; upBtn.innerHTML = '<i class="fas fa-arrow-up"></i>'; upBtn.title = "Up";
+                upBtn.disabled = index === layers.length - 1; upBtn.onclick = (e) => { e.stopPropagation(); moveLayer(layer.id, 'up'); };
+                if(upBtn.disabled) upBtn.classList.add('btn-disabled');
+                const downBtn = document.createElement('button'); downBtn.className = 'btn btn-sm'; downBtn.innerHTML = '<i class="fas fa-arrow-down"></i>'; downBtn.title = "Down";
+                downBtn.disabled = index === 0; downBtn.onclick = (e) => { e.stopPropagation(); moveLayer(layer.id, 'down'); };
+                if(downBtn.disabled) downBtn.classList.add('btn-disabled');
+                const deleteBtn = document.createElement('button'); deleteBtn.className = 'btn btn-sm btn-danger'; deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>'; deleteBtn.title = "Delete";
+                deleteBtn.onclick = (e) => { e.stopPropagation(); deleteLayer(layer.id); };
+                controlsDiv.append(upBtn, downBtn, deleteBtn); item.append(visibilityBtn, nameSpan, controlsDiv);
+                item.onclick = () => setActiveLayer(layer.id); layersListContainer.appendChild(item);
+            });
+            const activeLayer = getActiveLayer();
+            if (activeLayer) {
+                selectedLayerOpacityControl.classList.remove('hidden');
+                layerOpacitySlider.value = activeLayer.opacity * 100;
+                layerOpacityValue.textContent = Math.round(activeLayer.opacity * 100);
+            } else selectedLayerOpacityControl.classList.add('hidden');
+        }
+        
+        function makeLayerNameEditable(layerId, nameSpan) {
+            const layer = layers.find(l => l.id === layerId); if (!layer) return;
+            const input = document.createElement('input'); input.type = 'text'; input.className = 'layer-name-input'; input.value = layer.name;
+            nameSpan.replaceWith(input); input.focus(); input.select();
+            const saveName = () => {
+                saveStateForUndo(); layer.name = input.value.trim() || `Layer ${layers.findIndex(l => l.id === layerId) + 1}`;
+                input.replaceWith(nameSpan); nameSpan.textContent = layer.name; 
+            };
+            input.onblur = saveName; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); else if (e.key === 'Escape') { input.value = layer.name; input.blur(); }};
+        }
+
+        function toggleLayerVisibility(layerId) {
+            saveStateForUndo(); const layer = layers.find(l => l.id === layerId);
+            if (layer) layer.isVisible = !layer.isVisible; renderLayersList(); drawScene();
+        }
+
+        function deleteLayer(layerId) {
+            if (layers.length <= 1) { showModal("Action Denied", "Cannot delete the last layer."); return; }
+            const layerToDelete = layers.find(l => l.id === layerId); if (!layerToDelete) return;
+            showModal("Confirm Deletion", `Delete layer "${layerToDelete.name}"?`, 
+            [{ text: "Delete", class: 'btn-danger', action: () => {
+                saveStateForUndo(); layers = layers.filter(l => l.id !== layerId);
+                if (activeLayerId === layerId) setActiveLayer(layers.length > 0 ? layers[layers.length - 1].id : null);
+                renderLayersList(); drawScene(); closeModal(messageModal);
+            }},{ text: "Cancel", class: 'btn', action: () => closeModal(messageModal) }], true);
+        }
+
+        function moveLayer(layerId, direction) {
+            saveStateForUndo(); const index = layers.findIndex(l => l.id === layerId); if (index === -1) return;
+            if (direction === 'up' && index < layers.length - 1) [layers[index], layers[index + 1]] = [layers[index + 1], layers[index]];
+            else if (direction === 'down' && index > 0) [layers[index], layers[index - 1]] = [layers[index - 1], layers[index]];
+            renderLayersList(); drawScene();
+        }
+
+        function updateAnimationSlidersForActiveLayer() {
+            const activeLayer = getActiveLayer();
+            if (activeLayer) {
+                for (const key in animationSliders) {
+                    const setting = activeLayer.animationSettings[key];
+                    if (setting !== undefined) {
+                        animationSliders[key].slider.value = setting;
+                        animationSliders[key].valueEl.textContent = setting + (animationSliders[key].suffix || '');
+                    }
                 }
+            } else {
+                 for (const key in animationSliders) {
+                    animationSliders[key].slider.value = animationSliders[key].slider.defaultValue || 0;
+                    animationSliders[key].valueEl.textContent = (animationSliders[key].slider.defaultValue || 0) + (animationSliders[key].suffix || '');
+                 }
+            }
+        }
+
+        Object.values(animationSliders).forEach(item => {
+            item.slider.addEventListener('input', (e) => {
+                const activeLayer = getActiveLayer();
+                if (activeLayer) {
+                    const key = Object.keys(animationSliders).find(k => animationSliders[k].slider === e.target);
+                    if (key) {
+                        activeLayer.animationSettings[key] = parseFloat(e.target.value);
+                        item.valueEl.textContent = e.target.value + (item.suffix || '');
+                    }
+                }
+            });
+        });
+        
+        // --- Canvas View Transformation (Simplified: No Zoom/Pan) ---
+        function getCanvasMousePos(e) { 
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            // Since canvas is fixed at 1920x1080 and viewTransform.scale=1, offsetX/Y=0,
+            // mouse position relative to canvas element IS the world coordinate.
+            return { 
+                x: (clientX - rect.left), // No scaling or offset by viewTransform here
+                y: (clientY - rect.top)
+            };
+        }
+
+        // getTransformedMousePos is now the same as getCanvasMousePos due to fixed view
+        const getTransformedMousePos = getCanvasMousePos;
+
+        // Wheel event listener for zoom removed.
+        // Touch event listeners simplified (pinch zoom and touch-pan removed)
+        canvas.addEventListener('touchstart', (e) => {
+            // Only handle single touch for drawing
+            if (e.touches.length === 1 && (currentTool === 'pen' || currentTool === 'eraser')) {
+                 startDrawing(e); 
+            }
+            // Prevent default for multi-touch to avoid page zoom, etc.
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) {
+                e.preventDefault(); // Prevent scrolling while drawing
+                draw(e); 
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+             if (e.touches.length < 1 && isDrawing) { 
+                stopDrawing();
+            }
+        });
+        // Reset View Button and its listener removed.
+
+        // --- Drawing Logic (Layer-aware & View Transformed - simplified) ---
+        function startDrawing(e) {
+            if (currentTool !== 'pen' && currentTool !== 'eraser') return;
+            
+            const activeLayer = getActiveLayer();
+            if (!activeLayer || !activeLayer.isVisible) return; 
+            if (e.button !== 0 && e.type === 'mousedown') return; 
+            
+            saveStateForUndo(); 
+            isDrawing = true;
+            const { x, y } = getTransformedMousePos(e); 
+            
+            if (currentTool === 'pen') {
+                activeLayer.strokes.push({
+                    id: generateLayerId(), points: [{ x: x, y: y }], color: currentStrokeColor, 
+                    size: currentStrokeSize, tool: currentTool, originalSize: currentStrokeSize, birthTime: time, 
+                });
+            }
+            lastX = x; lastY = y; 
+        }
+
+        function isPointInCircle(px, py, cx, cy, radius) {
+            const dx = px - cx; const dy = py - cy;
+            return dx * dx + dy * dy <= radius * radius;
+        }
+
+        function draw(e) {
+            const activeLayer = getActiveLayer();
+            if (!isDrawing || !activeLayer || !activeLayer.isVisible) return;
+
+            const { x, y } = getTransformedMousePos(e); 
+
+            if (currentTool === 'eraser') {
+                const eraserRadiusWorld = currentStrokeSize / 2; 
+                let erasedSomething = false;
+                for (let i = activeLayer.strokes.length - 1; i >= 0; i--) {
+                    const stroke = activeLayer.strokes[i];
+                    if (stroke.tool === 'pen') { 
+                        let hit = false;
+                        for (const p of stroke.points) {
+                            if (isPointInCircle(p.x, p.y, x, y, eraserRadiusWorld)) {
+                                hit = true; break;
+                            }
+                        }
+                        if (hit) { activeLayer.strokes.splice(i, 1); erasedSomething = true; }
+                    }
+                }
+                if (erasedSomething) drawScene(); 
                 lastX = x; lastY = y; 
             } else if (currentTool === 'pen') {
                 const currentPath = activeLayer.strokes[activeLayer.strokes.length - 1];
                 if (!currentPath || currentPath.tool !== 'pen') { isDrawing = false; return; }
-                const dx = x - lastX; const dy = y - lastY;
-                if ( (dx * dx + dy * dy >= MIN_POINT_DISTANCE_SQ) || currentPath.points.length <= 1 ) {
-                    currentPath.points.push({ x: x, y: y });
-                    updateStrokeBoundingBox(currentPath); // Update bbox as stroke grows
-                    lastX = x; lastY = y; activeLayer.needsFullRedraw = true; 
-                }
+                currentPath.points.push({ x: x, y: y });
+            
+                ctx.save();
+                // No viewTransform translation/scaling needed here as it's fixed (1,0,0)
+                // and drawing coordinates are already world coordinates.
+                ctx.globalAlpha = activeLayer.opacity; 
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY); 
+                ctx.lineTo(x, y);         
+                ctx.strokeStyle = currentPath.color;
+                ctx.lineWidth = currentPath.size; // No division by viewTransform.scale
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.stroke();
+                ctx.restore();
+                lastX = x; lastY = y; 
             }
         }
 
-        function stopDrawing(e) { 
-            if (!isDrawing) return; const activeLayer = getActiveLayer();
-            if (activeLayer && currentTool === 'pen') {
-                const { x, y } = getTransformedMousePos(e); const currentStroke = activeLayer.strokes[activeLayer.strokes.length - 1];
-                if (currentStroke && currentStroke.points.length > 0) {
-                    const lastStoredPoint = currentStroke.points[currentStroke.points.length - 1];
-                    if (lastStoredPoint.x !== x || lastStoredPoint.y !== y) currentStroke.points.push({ x: x, y: y });
-                    if (currentStroke.points.length > 2 && RDP_TOLERANCE > 0) {
-                         currentStroke.points = rdpSimplify([...currentStroke.points], RDP_TOLERANCE);
-                    }
-                    updateStrokeBoundingBox(currentStroke); // Final bbox update
-                    if (currentStroke.bbox) { // Add finalized stroke to quadtree
-                        activeLayer.quadtree.insert({ bbox: currentStroke.bbox, item: currentStroke });
-                    }
-                    activeLayer.needsFullRedraw = true;
-                }
+        function stopDrawing() { 
+            if (currentTool !== 'pen' && currentTool !== 'eraser') return;
+            if (isDrawing) {
+                isDrawing = false;
+                if(currentTool === 'eraser') drawScene();
             }
-            isDrawing = false; if (activeLayer) activeLayer.needsFullRedraw = true;
         }
 
-        canvas.addEventListener('mousedown', (e) => { if (currentTool === 'pen' || currentTool === 'eraser') startDrawing(e); });
-        canvas.addEventListener('mousemove', (e) => { if (isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) draw(e); });
-        canvas.addEventListener('mouseup', stopDrawing); canvas.addEventListener('mouseleave', stopDrawing);
+        // Pan (Hand Tool) related listeners and logic removed.
+        // Mousedown/move/up/leave listeners simplified for drawing only.
+        canvas.addEventListener('mousedown', (e) => {
+            if (currentTool === 'pen' || currentTool === 'eraser') { 
+                startDrawing(e);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing && (currentTool === 'pen' || currentTool === 'eraser')) { 
+                draw(e);
+            }
+        });
+
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
         penToolBtn.addEventListener('click', () => { currentTool = 'pen'; setActiveToolButton(penToolBtn); });
         eraserToolBtn.addEventListener('click', () => { currentTool = 'eraser'; setActiveToolButton(eraserToolBtn); });
-        strokeSizeSlider.addEventListener('input', (e) => { currentStrokeSize = parseInt(e.target.value); strokeSizeValue.textContent = currentStrokeSize; updateCanvasCursor(); });
+
+        strokeSizeSlider.addEventListener('input', (e) => { 
+            currentStrokeSize = parseInt(e.target.value); 
+            strokeSizeValue.textContent = currentStrokeSize; 
+            updateCanvasCursor();
+        });
         strokeColorPicker.addEventListener('input', (e) => { currentStrokeColor = e.target.value; });
         
         clearActiveLayerBtn.addEventListener('click', () => { 
-            const activeLayer = getActiveLayer(); if (!activeLayer || activeLayer.strokes.length === 0) { showModal("Clear Layer", "Active layer is already empty."); return; }
+            const activeLayer = getActiveLayer();
+            if (!activeLayer || activeLayer.strokes.length === 0) {
+                showModal("Clear Layer", "Active layer is already empty."); return;
+            }
             showModal("Confirm Clear Layer", `Clear all strokes from layer "${activeLayer.name}"?`,
             [{text: "Clear Layer", class: 'btn-danger', action: () => {
-                saveStateForUndo(); activeLayer.strokes = []; activeLayer.quadtree.clear(); activeLayer.needsFullRedraw = true; closeModal(messageModal);
+                saveStateForUndo(); activeLayer.strokes = []; drawScene(); closeModal(messageModal);
             }},{text: "Cancel", class: 'btn', action: () => closeModal(messageModal)}], true);
         });
         
         clearAllLayersBtn.addEventListener('click', () => {
-            if (layers.every(l => l.strokes.length === 0)) { showModal("Clear All Layers", "All layers are already empty."); return; }
+            if (layers.every(l => l.strokes.length === 0)) {
+                 showModal("Clear All Layers", "All layers are already empty."); return;
+            }
             showModal("Confirm Clear All", "Clear strokes from ALL layers? This action affects all layers.",
             [{text: "Clear All", class: 'btn-danger', action: () => {
-                saveStateForUndo(); layers.forEach(layer => { layer.strokes = []; layer.quadtree.clear(); layer.needsFullRedraw = true; }); closeModal(messageModal);
+                saveStateForUndo(); layers.forEach(layer => layer.strokes = []); drawScene(); closeModal(messageModal);
             }},{text: "Cancel", class: 'btn', action: () => closeModal(messageModal)}], true);
         });
 
-        function applyState(stateData) { // stateData is the decompressed, parsed JSON object
-            layers = stateData.layers.map(loadedLayerData => {
-                // Reconstruct full layer object, including initializing offscreen canvas AND quadtree
-                const newLayer = createNewLayer( // createNewLayer now handles quadtree init and populating from strokesData
-                    loadedLayerData.name.replace('Layer ', ''), 
-                    loadedLayerData.strokes, // Pass strokes data to createNewLayer
-                    loadedLayerData.animationSettings,
-                    loadedLayerData.isVisible,
-                    loadedLayerData.opacity,
-                    false 
-                );
-                newLayer.id = loadedLayerData.id; newLayer.name = loadedLayerData.name;
-                // ensure all layers are marked for redraw
-                newLayer.needsFullRedraw = true; 
-                return newLayer;
-            });
-
-            activeLayerId = stateData.activeLayerId;
-            const currentActiveStillExists = layers.find(l => l.id === activeLayerId);
-            if (!currentActiveStillExists && layers.length > 0) activeLayerId = layers[layers.length - 1].id;
-            else if (layers.length === 0) activeLayerId = null;
-            
-            layers.forEach(l => { l.isActive = (l.id === activeLayerId); initializeLayerCanvas(l); /* Quadtree already handled by createNewLayer */ l.needsFullRedraw = true; });
-            renderLayersList(); updateAnimationSlidersForActiveLayer(); updateUndoRedoButtons();
-        }
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
 
         undoBtn.addEventListener('click', () => {
             if (undoStack.length > 0) {
-                const currentSerializableLayers = layers.map(layer => { const { offscreenCanvas, offscreenCtx, quadtree, ...serializableLayer } = layer; return serializableLayer; });
-                const currentStateJson = JSON.stringify({ layers: currentSerializableLayers, viewTransform: { ...viewTransform }, activeLayerId: activeLayerId });
-                redoStack.push(pako.deflate(currentStateJson)); // Compress for redo
+                redoStack.push({ layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } });
+                const prevState = undoStack.pop();
+                layers = prevState.layers;
+                // viewTransform = prevState.viewTransform; // viewTransform is static now
                 
-                const compressedPrevState = undoStack.pop();
-                try {
-                    const prevStateJson = pako.inflate(compressedPrevState, { to: 'string' });
-                    applyState(JSON.parse(prevStateJson));
-                } catch (error) {
-                    console.error("Error applying undo state (decompression/parse):", error);
-                    showModal("Undo Error", "Could not restore previous state. " + error.message);
-                    // Potentially try to restore redoStack and undoStack to a consistent state or clear them
-                    redoStack.pop(); // Remove the item we just pushed
-                    undoStack.push(compressedPrevState); // Put it back
-                }
+                const currentActiveStillExists = layers.find(l => l.id === activeLayerId);
+                if (!currentActiveStillExists && layers.length > 0) activeLayerId = layers[layers.length - 1].id;
+                else if (layers.length === 0) activeLayerId = null;
+                layers.forEach(l => l.isActive = (l.id === activeLayerId));
+
+                renderLayersList(); updateAnimationSlidersForActiveLayer(); drawScene(); updateUndoRedoButtons();
             }
         });
 
         redoBtn.addEventListener('click', () => {
             if (redoStack.length > 0) {
-                 const currentSerializableLayers = layers.map(layer => { const { offscreenCanvas, offscreenCtx, quadtree, ...serializableLayer } = layer; return serializableLayer; });
-                 const currentStateJson = JSON.stringify({ layers: currentSerializableLayers, viewTransform: { ...viewTransform }, activeLayerId: activeLayerId });
-                 undoStack.push(pako.deflate(currentStateJson)); // Compress for undo
-                
-                const compressedNextState = redoStack.pop();
-                try {
-                    const nextStateJson = pako.inflate(compressedNextState, { to: 'string' });
-                    applyState(JSON.parse(nextStateJson));
-                } catch (error) {
-                    console.error("Error applying redo state (decompression/parse):", error);
-                    showModal("Redo Error", "Could not restore next state. " + error.message);
-                    undoStack.pop(); // Remove the item we just pushed
-                    redoStack.push(compressedNextState); // Put it back
-                }
-            }
-        });
-        
-        function redrawLayerOffscreen(layer, currentTime) { /* ... (no changes) ... */ 
-            if (!layer.offscreenCtx) { console.error("Layer has no offscreenCtx:", layer.name); return; }
-            const layerCtx = layer.offscreenCtx; layerCtx.clearRect(0, 0, layer.offscreenCanvas.width, layer.offscreenCanvas.height);
-            const animSettings = layer.animationSettings; const animSpeed = parseFloat(animSettings.animationSpeed); const wiggleAmp = parseFloat(animSettings.wiggleIntensity); const breathAmount = parseFloat(animSettings.breathingStroke); const shakeAmount = parseFloat(animSettings.shakeIntensity);
-            layer.strokes.forEach(stroke => {
-                if (!stroke.points || stroke.points.length < 1) return;
-                layerCtx.save(); 
-                if (shakeAmount > 0) { const shakeX = (Math.random() - 0.5) * shakeAmount * animSpeed; const shakeY = (Math.random() - 0.5) * shakeAmount * animSpeed; layerCtx.translate(shakeX, shakeY); }
-                let currentDynamicSize = stroke.originalSize; if (breathAmount > 0) { currentDynamicSize = stroke.originalSize + Math.sin(currentTime * 0.1 * animSpeed + stroke.birthTime) * breathAmount; currentDynamicSize = Math.max(1, currentDynamicSize); }
-                if (stroke.tool === 'pen') {
-                    layerCtx.globalCompositeOperation = 'source-over'; layerCtx.beginPath();
-                    if (stroke.points.length === 1) { const p = stroke.points[0]; const radius = currentDynamicSize / 2; layerCtx.arc(p.x, p.y, radius, 0, Math.PI * 2); layerCtx.fillStyle = stroke.color; layerCtx.fill();
-                    } else { for (let i = 0; i < stroke.points.length; i++) { let p = { ...stroke.points[i] }; if (wiggleAmp > 0 && i > 0) { const prevP = stroke.points[i-1]; const dx = p.x - prevP.x; const dy = p.y - prevP.y; const angle = Math.atan2(dy, dx); const normalAngle = angle + Math.PI / 2; const wiggleOffset = Math.sin(currentTime * 0.1 * animSpeed + i * 0.5 + stroke.birthTime * 0.01) * wiggleAmp; p.x += Math.cos(normalAngle) * wiggleOffset; p.y += Math.sin(normalAngle) * wiggleOffset; } if (i === 0) layerCtx.moveTo(p.x, p.y); else layerCtx.lineTo(p.x, p.y); } layerCtx.strokeStyle = stroke.color; layerCtx.lineWidth = currentDynamicSize; layerCtx.lineCap = 'round'; layerCtx.lineJoin = 'round'; layerCtx.stroke(); }
-                } layerCtx.restore(); 
-            });
-            layer.needsFullRedraw = false;
-        }
-        function drawScene(isExporting = false, exportTimeOverride = null) { /* ... (no changes) ... */ 
-            const currentTime = isExporting ? exportTimeOverride : time; const mainCtx = ctx;
-            const targetWidth = isExporting ? EXPORT_WIDTH : WORLD_WIDTH; const targetHeight = isExporting ? EXPORT_HEIGHT : WORLD_HEIGHT;
-            if (canvas.width !== targetWidth) canvas.width = targetWidth; if (canvas.height !== targetHeight) canvas.height = targetHeight;
-            mainCtx.fillStyle = '#FFFFFF'; mainCtx.fillRect(0, 0, canvas.width, canvas.height);
-            layers.forEach(layer => {
-                if (!layer.isVisible || !layer.offscreenCanvas) return;
-                let needsOffscreenUpdate = layer.needsFullRedraw;
-                if (!needsOffscreenUpdate && !isExporting) { const animSettings = layer.animationSettings; if (parseFloat(animSettings.wiggleIntensity) > 0 || parseFloat(animSettings.breathingStroke) > 0 || parseFloat(animSettings.shakeIntensity) > 0) needsOffscreenUpdate = true; }
-                if (needsOffscreenUpdate || isExporting) redrawLayerOffscreen(layer, currentTime);
-                mainCtx.globalAlpha = layer.opacity; mainCtx.drawImage(layer.offscreenCanvas, 0, 0);
-            });
-            mainCtx.globalAlpha = 1.0;
-        }
-        function animate() { time += 1; drawScene(); animationFrameId = requestAnimationFrame(animate); }
-        
-        saveBtn.addEventListener('click', () => { // Updated to use Pako for compression
-            if (layers.length === 0 || layers.every(l => l.strokes.length === 0)) { showModal("Save Sketch", "Canvas empty."); return; }
-            const serializableLayers = layers.map(layer => { const { offscreenCanvas, offscreenCtx, quadtree, needsFullRedraw, ...serializableLayer } = layer; return serializableLayer; });
-            const dataToSave = { layers: serializableLayers, activeLayerId: activeLayerId, WORLD_WIDTH, WORLD_HEIGHT, viewTransform }; 
-            try {
-                const jsonDataString = JSON.stringify(dataToSave);
-                const compressedData = pako.deflate(jsonDataString); // Compress
-                const blob = new Blob([compressedData], { type: 'application/octet-stream' }); 
-                const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
-                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-'); a.download = `drawerz_sketch_${timestamp}.drz`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                showModal("Save Sketch", "Sketch saved as compressed .drz file!");
-            } catch (error) {
-                console.error("Error saving sketch (compression):", error);
-                showModal("Save Error", "Could not save sketch. " + error.message);
+                undoStack.push({ layers: JSON.parse(JSON.stringify(layers)), viewTransform: { ...viewTransform } });
+                const nextState = redoStack.pop();
+                layers = nextState.layers;
+                // viewTransform = nextState.viewTransform; // viewTransform is static now
+
+                const currentActiveStillExists = layers.find(l => l.id === activeLayerId);
+                if (!currentActiveStillExists && layers.length > 0) activeLayerId = layers[layers.length - 1].id;
+                else if (layers.length === 0) activeLayerId = null;
+                layers.forEach(l => l.isActive = (l.id === activeLayerId));
+
+                renderLayersList(); updateAnimationSlidersForActiveLayer(); drawScene(); updateUndoRedoButtons();
             }
         });
 
-        loadInput.addEventListener('change', (e) => { // Updated to use Pako for decompression
-            const file = e.target.files[0]; if (!file) return;
-            const fileName = file.name.toLowerCase(); const fileExtension = fileName.split('.').pop();
+        function drawScene(isExporting = false, exportTimeOverride = null) {
+            const currentTime = isExporting ? exportTimeOverride : time;
+            const targetCtx = ctx; 
+            
+            const currentCanvasWidth = isExporting ? EXPORT_WIDTH : canvas.width; // canvas.width is WORLD_WIDTH
+            const currentCanvasHeight = isExporting ? EXPORT_HEIGHT : canvas.height; // canvas.height is WORLD_HEIGHT
+
+            targetCtx.save(); 
+            if (isExporting) { // Ensure export canvas is correct size
+                if(canvas.width !== EXPORT_WIDTH || canvas.height !== EXPORT_HEIGHT) {
+                    canvas.width = EXPORT_WIDTH;
+                    canvas.height = EXPORT_HEIGHT;
+                }
+            } else { // Ensure drawing canvas is correct size
+                 if(canvas.width !== WORLD_WIDTH || canvas.height !== WORLD_HEIGHT) {
+                    canvas.width = WORLD_WIDTH;
+                    canvas.height = WORLD_HEIGHT;
+                }
+            }
+
+
+            targetCtx.fillStyle = '#FFFFFF'; 
+            targetCtx.fillRect(0, 0, currentCanvasWidth, currentCanvasHeight);
+
+            // No viewTransform.offsetX/Y or scale needed for drawing if not exporting,
+            // as coordinates are already in world space and canvas is 1:1 with world.
+            // For exporting, it's also 1:1.
+
+            layers.forEach(layer => {
+                if (!layer.isVisible || layer.strokes.length === 0) return;
+                targetCtx.save(); 
+                targetCtx.globalAlpha = layer.opacity; 
+                const animSettings = layer.animationSettings;
+                const animSpeed = parseFloat(animSettings.animationSpeed); 
+                const wiggleAmp = parseFloat(animSettings.wiggleIntensity);
+                const breathAmount = parseFloat(animSettings.breathingStroke);
+                const shakeAmount = parseFloat(animSettings.shakeIntensity);
+
+                layer.strokes.forEach(stroke => {
+                    if (!stroke.points || stroke.points.length < 1) return;
+                    targetCtx.save(); 
+
+                    if (shakeAmount > 0) { 
+                        const shakeX = (Math.random() - 0.5) * shakeAmount * animSpeed; 
+                        const shakeY = (Math.random() - 0.5) * shakeAmount * animSpeed;
+                        targetCtx.translate(shakeX, shakeY);
+                    }
+
+                    let currentDynamicSize = stroke.originalSize;
+                    if (breathAmount > 0) {
+                        currentDynamicSize = stroke.originalSize + Math.sin(currentTime * 0.1 * animSpeed + stroke.birthTime) * breathAmount;
+                        currentDynamicSize = Math.max(1, currentDynamicSize);
+                    }
+                    
+                    if (stroke.tool === 'pen') {
+                        targetCtx.globalCompositeOperation = 'source-over';
+                        targetCtx.beginPath();
+                        if (stroke.points.length === 1) { 
+                            const p = stroke.points[0];
+                            const radius = currentDynamicSize / 2; // No scaling by viewTransform.scale
+                            targetCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                            targetCtx.fillStyle = stroke.color; 
+                            targetCtx.fill();
+                        } else { 
+                            for (let i = 0; i < stroke.points.length; i++) {
+                                let p = { ...stroke.points[i] }; 
+                                if (wiggleAmp > 0 && i > 0) {
+                                    const prevP = stroke.points[i-1]; const dx = p.x - prevP.x; const dy = p.y - prevP.y;
+                                    const angle = Math.atan2(dy, dx); const normalAngle = angle + Math.PI / 2; 
+                                    const wiggleOffset = Math.sin(currentTime * 0.1 * animSpeed + i * 0.5 + stroke.birthTime * 0.01) * wiggleAmp;
+                                    p.x += Math.cos(normalAngle) * wiggleOffset; p.y += Math.sin(normalAngle) * wiggleOffset;
+                                }
+                                if (i === 0) targetCtx.moveTo(p.x, p.y); else targetCtx.lineTo(p.x, p.y);
+                            }
+                            targetCtx.strokeStyle = stroke.color;
+                            targetCtx.lineWidth = currentDynamicSize; // No scaling by viewTransform.scale
+                            targetCtx.lineCap = 'round'; targetCtx.lineJoin = 'round'; 
+                            targetCtx.stroke();
+                        }
+                    }
+                    targetCtx.restore(); 
+                });
+                targetCtx.restore(); 
+            });
+            targetCtx.restore(); // Matches the initial targetCtx.save()
+        }
+
+        function animate() { time += 1; drawScene(); animationFrameId = requestAnimationFrame(animate); }
+        
+        strokeSizeSlider.addEventListener('input', (e) => { 
+            currentStrokeSize = parseInt(e.target.value); 
+            strokeSizeValue.textContent = currentStrokeSize; 
+            updateCanvasCursor();
+        });
+
+        saveBtn.addEventListener('click', () => {
+            if (layers.length === 0 || layers.every(l => l.strokes.length === 0)) { showModal("Save Sketch", "Canvas empty."); return; }
+            // viewTransform is static but included for format consistency
+            const dataToSave = { layers: layers, activeLayerId: activeLayerId, WORLD_WIDTH, WORLD_HEIGHT, viewTransform }; 
+            const jsonData = JSON.stringify(dataToSave); const blob = new Blob([jsonData], { type: 'application/octet-stream' }); 
+            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-'); a.download = `drawerz_sketch_${timestamp}.drz`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            showModal("Save Sketch", "Sketch saved as .drz file!");
+        });
+
+        loadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0]; 
+            if (!file) return;
+            const fileName = file.name.toLowerCase();
+            const fileExtension = fileName.split('.').pop();
+
             if (fileExtension === 'drz') {
-                loadingIndicator.classList.remove('hidden'); if(loadingText) loadingText.textContent = "Loading .drz sketch...";
+                loadingIndicator.classList.remove('hidden'); 
+                if(loadingText) loadingText.textContent = "Loading .drz sketch...";
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     try {
-                        const compressedData = new Uint8Array(event.target.result);
-                        const jsonDataString = pako.inflate(compressedData, { to: 'string' }); // Decompress
-                        const data = JSON.parse(jsonDataString);
+                        const data = JSON.parse(event.target.result);
                         if (data.layers && Array.isArray(data.layers)) {
-                            saveStateForUndo(); applyState(data); showModal("Load Sketch", "Sketch loaded successfully!");
-                        } else showModal("Load Error", "Invalid .drz file structure after decompression.");
-                    } catch (error) { console.error("Load error (decompression/parse):", error); showModal("Load Error", "Could not load sketch. File might be corrupted, not a compressed .drz, or an older uncompressed version. Error: " + error.message);
+                            saveStateForUndo(); 
+                            layers = data.layers.map(loadedLayer => {
+                                const defaultAnim = {};
+                                for (const key in animationSliders) defaultAnim[key] = parseFloat(animationSliders[key].slider.defaultValue || 0);
+                                return {
+                                    id: loadedLayer.id || generateLayerId(), name: loadedLayer.name || 'Loaded Layer',
+                                    strokes: loadedLayer.strokes || [],
+                                    animationSettings: { ...defaultAnim, ...(loadedLayer.animationSettings || {}) }, 
+                                    isVisible: loadedLayer.isVisible !== undefined ? loadedLayer.isVisible : true,
+                                    opacity: loadedLayer.opacity !== undefined ? loadedLayer.opacity : 1, isActive: false
+                                };
+                            });
+                            if (data.activeLayerId && layers.find(l => l.id === data.activeLayerId)) activeLayerId = data.activeLayerId;
+                            else if (layers.length > 0) activeLayerId = layers[layers.length - 1].id;
+                            else activeLayerId = null;
+                            layers.forEach(l => l.isActive = (l.id === activeLayerId));
+                            
+                            // viewTransform from file is ignored as it's static now.
+                            // viewTransform = data.viewTransform || { scale: 1, offsetX: 0, offsetY: 0};
+                            
+                            renderLayersList(); updateAnimationSlidersForActiveLayer(); setupCanvasDimensions(); // Use new setup
+                            showModal("Load Sketch", "Sketch loaded!");
+                        } else showModal("Load Error", "Invalid .drz file. Missing 'layers' data.");
+                    } catch (error) { console.error("Load error:", error); showModal("Load Error", "Could not load sketch. " + error.message);
                     } finally { loadingIndicator.classList.add('hidden'); loadInput.value = ''; }
                 };
                 reader.onerror = () => { showModal("Load Error", "Error reading file."); loadingIndicator.classList.add('hidden'); loadInput.value = ''; };
-                reader.readAsArrayBuffer(file); // Read as ArrayBuffer for Pako
-            } else if (fileExtension === 'svg') { /* ... (SVG import logic, no changes) ... */ 
-                 loadingIndicator.classList.remove('hidden'); if(loadingText) loadingText.textContent = "Parsing SVG...";
+                reader.readAsText(file);
+            } else if (fileExtension === 'svg') {
+                loadingIndicator.classList.remove('hidden');
+                if(loadingText) loadingText.textContent = "Parsing SVG...";
                 const reader = new FileReader();
-                reader.onload = (event) => { try { parseAndAddSVG(event.target.result); showModal("SVG Import", "SVG content imported to active layer. Complex features might be simplified."); } catch (error) { console.error("SVG Parse error:", error); showModal("SVG Import Error", "Could not parse SVG. " + error.message); } finally { loadingIndicator.classList.add('hidden'); loadInput.value = ''; } };
+                reader.onload = (event) => {
+                    try {
+                        parseAndAddSVG(event.target.result);
+                        showModal("SVG Import", "SVG content imported to active layer. Complex features might be simplified.");
+                    } catch (error) {
+                        console.error("SVG Parse error:", error);
+                        showModal("SVG Import Error", "Could not parse SVG. " + error.message);
+                    } finally {
+                        loadingIndicator.classList.add('hidden');
+                        loadInput.value = '';
+                    }
+                };
                 reader.onerror = () => { showModal("Load Error", "Error reading SVG file."); loadingIndicator.classList.add('hidden'); loadInput.value = ''; };
                 reader.readAsText(file);
-            } else { showModal("Unsupported File", "Unsupported file type. Please load a .drz or .svg file."); loadInput.value = ''; }
+            } else if (fileExtension === 'psd' || fileExtension === 'clip') { 
+                 showModal("Import Not Supported", 
+                    `Direct import of <strong>.${fileExtension.toUpperCase()}</strong> files is not supported due to their complexity. ` +
+                    "Please export your artwork as an SVG from Photoshop or Clip Studio Paint if you wish to import vector data."
+                );
+                loadInput.value = ''; 
+            } else {
+                showModal("Unsupported File", "Unsupported file type. Please load a .drz or .svg file.");
+                loadInput.value = ''; 
+            }
         });
 
-        function parseAndAddSVG(svgString) { /* ... (no changes from previous, ensure updateStrokeBoundingBox and quadtree.insert are called for new strokes) ... */ 
-            const activeLayer = getActiveLayer(); if (!activeLayer) { showModal("SVG Import Error", "No active layer. Please add or select a layer."); return; }
-            saveStateForUndo(); const parser = new DOMParser(); const svgDoc = parser.parseFromString(svgString, "image/svg+xml"); const svgElement = svgDoc.documentElement;
+        function parseAndAddSVG(svgString) {
+            const activeLayer = getActiveLayer();
+            if (!activeLayer) {
+                showModal("SVG Import Error", "No active layer to import SVG content into. Please add or select a layer.");
+                return;
+            }
+            saveStateForUndo();
+
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
+            const svgElement = svgDoc.documentElement;
+
             let vbX=0, vbY=0, vbW=parseFloat(svgElement.getAttribute('width')), vbH=parseFloat(svgElement.getAttribute('height'));
-            const viewBox = svgElement.getAttribute('viewBox'); if (viewBox) { const parts = viewBox.split(/[\s,]+/); vbX = parseFloat(parts[0])||0; vbY = parseFloat(parts[1])||0; vbW = parseFloat(parts[2])||vbW; vbH = parseFloat(parts[3])||vbH; }
-            const scaleX = WORLD_WIDTH / vbW; const scaleY = WORLD_HEIGHT / vbH; const globalScale = Math.min(scaleX, scaleY) * 0.9; 
-            function transformPoint(x, y) { return { x: (x - vbX) * globalScale + (WORLD_WIDTH - vbW * globalScale) / 2, y: (y - vbY) * globalScale + (WORLD_HEIGHT - vbH * globalScale) / 2 }; }
+            const viewBox = svgElement.getAttribute('viewBox');
+            if (viewBox) {
+                const parts = viewBox.split(/[\s,]+/);
+                vbX = parseFloat(parts[0]) || 0;
+                vbY = parseFloat(parts[1]) || 0;
+                vbW = parseFloat(parts[2]) || vbW;
+                vbH = parseFloat(parts[3]) || vbH;
+            }
+            
+            // Scale SVG content to fit within WORLD_WIDTH/HEIGHT
+            const scaleX = WORLD_WIDTH / vbW; 
+            const scaleY = WORLD_HEIGHT / vbH;
+            const globalScale = Math.min(scaleX, scaleY) * 0.9; // 0.9 for some padding
+
+            function transformPoint(x, y) {
+                return {
+                    x: (x - vbX) * globalScale + (WORLD_WIDTH - vbW * globalScale) / 2,
+                    y: (y - vbY) * globalScale + (WORLD_HEIGHT - vbH * globalScale) / 2
+                };
+            }
+            
             let importedStrokesCount = 0;
-            function parsePathD(d) { const points = []; if (!d) return points; const commands = d.match(/[a-zA-Z][^a-zA-Z]*/g) || []; let currentX = 0, currentY = 0; let subPathStart = null; commands.forEach(cmdStr => { const type = cmdStr[0]; const args = (cmdStr.substring(1).match(/-?\d*\.?\d+/g) || []).map(parseFloat); if (type === 'M') { currentX = args[0]; currentY = args[1]; points.push(transformPoint(currentX, currentY)); subPathStart = {x: currentX, y: currentY}; for (let i = 2; i < args.length; i += 2) { currentX = args[i]; currentY = args[i+1]; points.push(transformPoint(currentX, currentY)); } } else if (type === 'm') { currentX += args[0]; currentY += args[1]; points.push(transformPoint(currentX, currentY)); subPathStart = {x: currentX, y: currentY}; for (let i = 2; i < args.length; i += 2) { currentX += args[i]; currentY += args[i+1]; points.push(transformPoint(currentX, currentY)); } } else if (type === 'L') { for (let i = 0; i < args.length; i += 2) { currentX = args[i]; currentY = args[i+1]; points.push(transformPoint(currentX, currentY)); } } else if (type === 'l') { for (let i = 0; i < args.length; i += 2) { currentX += args[i]; currentY += args[i+1]; points.push(transformPoint(currentX, currentY)); } } else if (type === 'Z' || type === 'z') { if (subPathStart && points.length > 0) { const firstTransformed = transformPoint(subPathStart.x, subPathStart.y); if(Math.abs(points[points.length-1].x - firstTransformed.x) > 0.1 || Math.abs(points[points.length-1].y - firstTransformed.y) > 0.1) { points.push(firstTransformed); } } subPathStart = null; } }); return points; }
+
+            function parsePathD(d) {
+                const points = [];
+                if (!d) return points;
+                const commands = d.match(/[a-zA-Z][^a-zA-Z]*/g) || [];
+                let currentX = 0, currentY = 0;
+                let subPathStart = null;
+
+                commands.forEach(cmdStr => {
+                    const type = cmdStr[0];
+                    const args = (cmdStr.substring(1).match(/-?\d*\.?\d+/g) || []).map(parseFloat);
+                    
+                    if (type === 'M') { 
+                        currentX = args[0]; currentY = args[1];
+                        points.push(transformPoint(currentX, currentY));
+                        subPathStart = {x: currentX, y: currentY};
+                        for (let i = 2; i < args.length; i += 2) { 
+                            currentX = args[i]; currentY = args[i+1];
+                            points.push(transformPoint(currentX, currentY));
+                        }
+                    } else if (type === 'L') { 
+                         for (let i = 0; i < args.length; i += 2) {
+                            currentX = args[i]; currentY = args[i+1];
+                            points.push(transformPoint(currentX, currentY));
+                        }
+                    } else if (type === 'Z' || type === 'z') { 
+                        if (subPathStart && points.length > 0) {
+                            const lastPoint = points[points.length-1];
+                            const firstTransformed = transformPoint(subPathStart.x, subPathStart.y);
+                            if(Math.abs(lastPoint.x - firstTransformed.x) > 0.1 || Math.abs(lastPoint.y - firstTransformed.y) > 0.1) { 
+                                points.push(firstTransformed);
+                            }
+                        }
+                        subPathStart = null; 
+                    }
+                    // Note: This is a simplified parser. More complex SVG path commands (curves, arcs) are not fully handled
+                    // and will be represented as straight lines between their control points or endpoints.
+                });
+                return points;
+            }
+
             svgDoc.querySelectorAll('path, line, rect, circle, ellipse, polyline, polygon').forEach(el => {
-                let points = []; const strokeColor = el.getAttribute('stroke') || currentStrokeColor; let strokeWidth = parseFloat(el.getAttribute('stroke-width')) || currentStrokeSize; if (isNaN(strokeWidth) || strokeWidth <= 0) strokeWidth = currentStrokeSize;
+                let points = [];
+                const strokeColor = el.getAttribute('stroke') || currentStrokeColor;
+                let strokeWidth = parseFloat(el.getAttribute('stroke-width')) || currentStrokeSize;
+                if (isNaN(strokeWidth) || strokeWidth <= 0) strokeWidth = currentStrokeSize;
+
                 const tagName = el.tagName.toLowerCase();
-                if (tagName === 'path') points = parsePathD(el.getAttribute('d'));
-                else if (tagName === 'line') { points.push(transformPoint(parseFloat(el.getAttribute('x1')), parseFloat(el.getAttribute('y1')))); points.push(transformPoint(parseFloat(el.getAttribute('x2')), parseFloat(el.getAttribute('y2')))); }
-                else if (tagName === 'rect') { const x = parseFloat(el.getAttribute('x')); const y = parseFloat(el.getAttribute('y')); const w = parseFloat(el.getAttribute('width')); const h = parseFloat(el.getAttribute('height')); points.push(transformPoint(x,y)); points.push(transformPoint(x+w,y)); points.push(transformPoint(x+w,y+h)); points.push(transformPoint(x,y+h)); points.push(transformPoint(x,y)); }
-                else if (tagName === 'circle') { const cx = parseFloat(el.getAttribute('cx')); const cy = parseFloat(el.getAttribute('cy')); const r = parseFloat(el.getAttribute('r')); for (let i=0; i<=360; i+=15) { const angle = i * Math.PI/180; points.push(transformPoint(cx + r*Math.cos(angle), cy + r*Math.sin(angle))); } }
-                else if (tagName === 'ellipse') { const cx = parseFloat(el.getAttribute('cx')); const cy = parseFloat(el.getAttribute('cy')); const rx = parseFloat(el.getAttribute('rx')); const ry = parseFloat(el.getAttribute('ry')); for (let i=0; i<=360; i+=15) { const angle = i * Math.PI/180; points.push(transformPoint(cx + rx*Math.cos(angle), cy + ry*Math.sin(angle))); } }
-                else if (tagName === 'polyline' || tagName === 'polygon') { const ptsStr = el.getAttribute('points').split(/[\s,]+/); for (let i=0; i<ptsStr.length; i+=2) { points.push(transformPoint(parseFloat(ptsStr[i]), parseFloat(ptsStr[i+1]))); } if (tagName === 'polygon' && points.length > 0) points.push({...points[0]}); }
+                if (tagName === 'path') {
+                    points = parsePathD(el.getAttribute('d'));
+                } else if (tagName === 'line') {
+                    points.push(transformPoint(parseFloat(el.getAttribute('x1')), parseFloat(el.getAttribute('y1'))));
+                    points.push(transformPoint(parseFloat(el.getAttribute('x2')), parseFloat(el.getAttribute('y2'))));
+                } else if (tagName === 'rect') {
+                    const x = parseFloat(el.getAttribute('x')); const y = parseFloat(el.getAttribute('y'));
+                    const w = parseFloat(el.getAttribute('width')); const h = parseFloat(el.getAttribute('height'));
+                    points.push(transformPoint(x, y)); points.push(transformPoint(x + w, y));
+                    points.push(transformPoint(x + w, y + h)); points.push(transformPoint(x, y + h));
+                    points.push(transformPoint(x, y)); 
+                } else if (tagName === 'circle') {
+                    const cx = parseFloat(el.getAttribute('cx')); const cy = parseFloat(el.getAttribute('cy'));
+                    const r = parseFloat(el.getAttribute('r'));
+                    for (let i = 0; i <= 360; i += 15) { 
+                        const angle = i * Math.PI / 180;
+                        points.push(transformPoint(cx + r * Math.cos(angle), cy + r * Math.sin(angle)));
+                    }
+                } else if (tagName === 'ellipse') {
+                    const cx = parseFloat(el.getAttribute('cx')); const cy = parseFloat(el.getAttribute('cy'));
+                    const rx = parseFloat(el.getAttribute('rx')); const ry = parseFloat(el.getAttribute('ry'));
+                    for (let i = 0; i <= 360; i += 15) {
+                        const angle = i * Math.PI / 180;
+                        points.push(transformPoint(cx + rx * Math.cos(angle), cy + ry * Math.sin(angle)));
+                    }
+                } else if (tagName === 'polyline' || tagName === 'polygon') {
+                    const ptsStr = el.getAttribute('points').split(/[\s,]+/);
+                    for (let i = 0; i < ptsStr.length; i += 2) {
+                        points.push(transformPoint(parseFloat(ptsStr[i]), parseFloat(ptsStr[i+1])));
+                    }
+                    if (tagName === 'polygon' && points.length > 0) {
+                        points.push({...points[0]}); 
+                    }
+                }
+
                 if (points.length > 0) {
-                    const newStroke = { id: generateLayerId(), points: points, color: strokeColor, size: strokeWidth, tool: 'pen', originalSize: strokeWidth, birthTime: time, bbox: null };
-                    updateStrokeBoundingBox(newStroke); activeLayer.strokes.push(newStroke);
-                    if (newStroke.bbox) activeLayer.quadtree.insert({ bbox: newStroke.bbox, item: newStroke }); // Add to quadtree
+                    activeLayer.strokes.push({
+                        id: generateLayerId(), points: points, color: strokeColor, size: strokeWidth,
+                        tool: 'pen', originalSize: strokeWidth, birthTime: time 
+                    });
                     importedStrokesCount++;
                 }
             });
-            if (importedStrokesCount > 0) activeLayer.needsFullRedraw = true; console.log(`Imported ${importedStrokesCount} shapes/paths from SVG.`);
+            if (importedStrokesCount > 0) drawScene();
+            console.log(`Imported ${importedStrokesCount} shapes/paths from SVG.`);
         }
         
-        async function initializeFFmpeg() { /* ... (no changes) ... */ if (!ffmpeg) { ffmpeg = createFFmpeg({ log: true, corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js', });} if (!ffmpeg.isLoaded()) { if(loadingText) loadingText.textContent = "Loading FFmpeg library (~30MB)..."; loadingIndicator.classList.remove('hidden'); await ffmpeg.load(); } }
-        async function checkAndLoadFFmpeg() { /* ... (no changes) ... */ if (typeof SharedArrayBuffer === 'undefined') { let sabMessage = "<p>MP4 export uses FFmpeg.wasm, which requires <code>SharedArrayBuffer</code>.</p>" + "<p>This feature is often disabled by browsers unless the page is served with specific HTTP headers (COOP & COEP).</p>"; if ('serviceWorker' in navigator && navigator.serviceWorker.controller) { sabMessage += "<p>A Service Worker is active, which attempts to set these headers. If <code>SharedArrayBuffer</code> is still unavailable, please try **reloading the page** (sometimes a hard refresh: Ctrl+Shift+R or Cmd+Shift+R is needed). If the issue persists, your hosting environment or browser settings might be preventing it.</p>"; } else if ('serviceWorker' in navigator) { sabMessage += "<p>A Service Worker is attempting to register to enable this. This might be its first activation. Please **reload the page** and try exporting again. If MP4 export still fails, the Service Worker might not have activated correctly or your environment has restrictions.</p>"; } else { sabMessage += "<p>Your browser does not support Service Workers, or support is disabled. Service Workers are used here to attempt to set the required headers on this hosting platform.</p>"; } sabMessage += "<p>For MP4 export to work, the page needs to be served with:<br>" + "<code>Cross-Origin-Opener-Policy: same-origin</code><br>" + "<code>Cross-Origin-Embedder-Policy: require-corp</code></p>" + "<p>If reloading doesn't help, consider using a different browser or a hosting platform that allows setting these headers directly if MP4 export is essential.</p>"; showModal("MP4 Export Prerequisite Missing", sabMessage); return false; } try { await initializeFFmpeg(); } catch (err) { console.error("FFmpeg load error:", err); showModal("FFmpeg Load Error", "Failed to load FFmpeg components. MP4 export is unavailable. Error: " + err.message); loadingIndicator.classList.add('hidden'); return false; } return true; }
-        exportMp4Btn.addEventListener('click', async () => { /* ... (no changes) ... */ if (layers.every(l => !l.isVisible || l.strokes.length === 0)) { showModal("Export Error", "No visible content to export."); return; } const ffmpegReady = await checkAndLoadFFmpeg(); if (!ffmpegReady) { loadingIndicator.classList.add('hidden'); return; } const globalExportAnimSpeedFactor = parseFloat(animationSliders.animationSpeed.slider.value); if (globalExportAnimSpeedFactor <= 0) { showModal("Export Warning", "Global Animation Speed is zero or less. The exported video will not show animation. Please increase the Animation Speed slider value if you want animated export."); } loadingIndicator.classList.remove('hidden'); if(loadingText) loadingText.textContent = "Preparing video export..."; const frameRate = 30; const durationSeconds = 15; const totalFrames = frameRate * durationSeconds; const liveAnimationTimeAtStart = time; let exportRenderTime = liveAnimationTimeAtStart;  const timeStepPerVideoFrame = globalExportAnimSpeedFactor * (60 / frameRate); if (animationFrameId) cancelAnimationFrame(animationFrameId);  let currentFrame = 0; const frameFileNames = []; const originalMainCanvasWidth = canvas.width; const originalMainCanvasHeight = canvas.height; async function renderAndSaveFrame() { if (currentFrame >= totalFrames) { await compileVideo(); return; } if(loadingText) loadingText.textContent = `Rendering frame ${currentFrame + 1} of ${totalFrames}...`; drawScene(true, exportRenderTime);  const frameName = `frame${String(currentFrame).padStart(4, '0')}.png`; frameFileNames.push(frameName); try { const dataUrl = canvas.toDataURL('image/png'); const blob = await (await fetch(dataUrl)).blob(); const arrayBuffer = await blob.arrayBuffer(); ffmpeg.FS('writeFile', frameName, new Uint8Array(arrayBuffer)); } catch (frameError) { console.error(`Error processing frame ${frameName}:`, frameError); showModal("Frame Processing Error", `Failed to process frame ${currentFrame + 1}. Export aborted.`); frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} }); canvas.width = originalMainCanvasWidth; canvas.height = originalMainCanvasHeight; layers.forEach(l => { if(l.offscreenCanvas) { l.offscreenCanvas.width = WORLD_WIDTH; l.offscreenCanvas.height = WORLD_HEIGHT; l.needsFullRedraw = true;}}); loadingIndicator.classList.add('hidden'); time = liveAnimationTimeAtStart; animate(); return; } exportRenderTime += timeStepPerVideoFrame; currentFrame++; setTimeout(renderAndSaveFrame, 1);  } async function compileVideo() { if(loadingText) loadingText.textContent = "Encoding MP4... This may take a while."; try { await ffmpeg.run('-r', String(frameRate), '-i', 'frame%04d.png', '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', 'output.mp4'); const data = ffmpeg.FS('readFile', 'output.mp4'); const blob = new Blob([data.buffer], { type: 'video/mp4' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');  a.download = `drawerz_animation_${timestamp}.mp4`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showModal("Export Complete", "Animation exported as MP4!"); } catch (error) { console.error("FFmpeg run error:", error); showModal("FFmpeg Export Error", "Error during video encoding: " + error.message); } finally { frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} }); try { ffmpeg.FS('unlink', 'output.mp4'); } catch(e){} canvas.width = originalMainCanvasWidth; canvas.height = originalMainCanvasHeight; layers.forEach(l => { if(l.offscreenCanvas) {l.offscreenCanvas.width = WORLD_WIDTH; l.offscreenCanvas.height = WORLD_HEIGHT; l.needsFullRedraw = true;}}); loadingIndicator.classList.add('hidden'); time = liveAnimationTimeAtStart; animate(); } } renderAndSaveFrame();  });
-        exportGifBtn.addEventListener('click', async () => { /* ... (no changes) ... */ if (layers.every(l => !l.isVisible || l.strokes.length === 0)) { showModal("Export Error", "No visible content to export."); return; } loadingIndicator.classList.remove('hidden'); if(loadingText) loadingText.textContent = "Preparing GIF export..."; const frameRate = 10; const durationSeconds = 15; const totalFrames = frameRate * durationSeconds; const delay = 1000 / frameRate;  const liveAnimationTimeAtStart = time; let exportRenderTime = liveAnimationTimeAtStart; const globalExportAnimSpeedFactor = parseFloat(animationSliders.animationSpeed.slider.value); if (globalExportAnimSpeedFactor <= 0) { showModal("Export Warning", "Global Animation Speed is zero or less. The exported GIF will not show animation. Please increase the Animation Speed slider value if you want animated export.");} const timeStepPerVideoFrame = globalExportAnimSpeedFactor * (60 / frameRate); if (animationFrameId) cancelAnimationFrame(animationFrameId); const gif = new GIF({ workers: 2, quality: 10, workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js', width: EXPORT_WIDTH, height: EXPORT_HEIGHT, background: '#FFF', transparent: null }); const originalMainCanvasWidth = canvas.width; const originalMainCanvasHeight = canvas.height; let currentFrame = 0; function addGifFrame() { if (currentFrame >= totalFrames) { gif.render(); return; } if(loadingText) loadingText.textContent = `Rendering GIF frame ${currentFrame + 1} of ${totalFrames}...`; drawScene(true, exportRenderTime); gif.addFrame(canvas, { copy: true, delay: delay }); exportRenderTime += timeStepPerVideoFrame; currentFrame++; setTimeout(addGifFrame, 10);  } gif.on('finished', function(blob) { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-'); a.download = `drawerz_animation_${timestamp}.gif`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); canvas.width = originalMainCanvasWidth; canvas.height = originalMainCanvasHeight; layers.forEach(l => { if(l.offscreenCanvas) {l.offscreenCanvas.width = WORLD_WIDTH; l.offscreenCanvas.height = WORLD_HEIGHT; l.needsFullRedraw = true;}}); loadingIndicator.classList.add('hidden'); showModal("Export Complete", "Animation exported as GIF!"); time = liveAnimationTimeAtStart; animate(); }); gif.on('progress', function(p) { if(loadingText) loadingText.textContent = `Encoding GIF: ${Math.round(p * 100)}%`; }); addGifFrame(); });
+        async function initializeFFmpeg() {
+            if (!ffmpeg) { 
+                 ffmpeg = createFFmpeg({ 
+                    log: true, 
+                    corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+                 });
+            }
+            if (!ffmpeg.isLoaded()) {
+                if(loadingText) loadingText.textContent = "Loading FFmpeg library (~30MB)...";
+                loadingIndicator.classList.remove('hidden'); 
+                await ffmpeg.load();
+            }
+        }
+       async function checkAndLoadFFmpeg() {
+            if (typeof SharedArrayBuffer === 'undefined') {
+                let sabMessage = "<p>MP4 export uses FFmpeg.wasm, which requires <code>SharedArrayBuffer</code>.</p>" +
+                                 "<p>This feature is often disabled by browsers unless the page is served with specific HTTP headers (COOP & COEP).</p>";
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                sabMessage += "<p>A Service Worker is active, which attempts to set these headers. If <code>SharedArrayBuffer</code> is still unavailable, please try **reloading the page** (sometimes a hard refresh: Ctrl+Shift+R or Cmd+Shift+R is needed). If the issue persists, your hosting environment or browser settings might be preventing it.</p>";
+                } else if ('serviceWorker' in navigator) {
+                sabMessage += "<p>A Service Worker is attempting to register to enable this. This might be its first activation. Please **reload the page** and try exporting again. If MP4 export still fails, the Service Worker might not have activated correctly or your environment has restrictions.</p>";
+                } else {
+                sabMessage += "<p>Your browser does not support Service Workers, or support is disabled. Service Workers are used here to attempt to set the required headers on this hosting platform.</p>";
+                }
+                sabMessage += "<p>For MP4 export to work, the page needs to be served with:<br>" +
+                              "<code>Cross-Origin-Opener-Policy: same-origin</code><br>" +
+                              "<code>Cross-Origin-Embedder-Policy: require-corp</code></p>" +
+                              "<p>If reloading doesn't help, consider using a different browser or a hosting platform that allows setting these headers directly if MP4 export is essential.</p>";
+                showModal("MP4 Export Prerequisite Missing", sabMessage);
+                return false;
+            }
+
+            try {
+                await initializeFFmpeg(); 
+            } catch (err) {
+                console.error("FFmpeg load error:", err);
+                showModal("FFmpeg Load Error", "Failed to load FFmpeg components. MP4 export is unavailable. Error: " + err.message);
+                loadingIndicator.classList.add('hidden');
+                return false;
+            }
+            return true;
+        }
+
+
+        exportMp4Btn.addEventListener('click', async () => { 
+            if (layers.every(l => !l.isVisible || l.strokes.length === 0)) { 
+                showModal("Export Error", "No visible content to export."); return; 
+            }
+
+            const ffmpegReady = await checkAndLoadFFmpeg();
+            if (!ffmpegReady) {
+                loadingIndicator.classList.add('hidden'); 
+                return; 
+            }
+            
+            const globalExportAnimSpeedFactor = parseFloat(animationSliders.animationSpeed.slider.value);
+            if (globalExportAnimSpeedFactor <= 0) {
+                showModal("Export Warning", "Global Animation Speed is zero or less. The exported video will not show animation. Please increase the Animation Speed slider value if you want animated export.");
+            }
+
+            loadingIndicator.classList.remove('hidden');
+            if(loadingText) loadingText.textContent = "Preparing video export...";
+
+            const frameRate = 30; 
+            const durationSeconds = 15; 
+            const totalFrames = frameRate * durationSeconds;
+            
+            const liveAnimationTimeAtStart = time; 
+            let exportRenderTime = liveAnimationTimeAtStart; 
+            const timeStepPerVideoFrame = globalExportAnimSpeedFactor * (60 / frameRate);
+
+            if (animationFrameId) cancelAnimationFrame(animationFrameId); 
+
+            let currentFrame = 0;
+            const frameFileNames = [];
+
+            const originalCanvasWidth = canvas.width; // Should be WORLD_WIDTH
+            const originalCanvasHeight = canvas.height; // Should be WORLD_HEIGHT
+
+            // Ensure canvas is set to EXPORT dimensions for rendering frames
+            canvas.width = EXPORT_WIDTH;
+            canvas.height = EXPORT_HEIGHT;
+
+
+            async function renderAndSaveFrame() {
+                if (currentFrame >= totalFrames) {
+                    await compileVideo();
+                    return;
+                }
+                if(loadingText) loadingText.textContent = `Rendering frame ${currentFrame + 1} of ${totalFrames}...`;
+                
+                // Ensure canvas is at export dimensions for each frame (belt and braces)
+                if(canvas.width !== EXPORT_WIDTH || canvas.height !== EXPORT_HEIGHT) { 
+                    canvas.width = EXPORT_WIDTH;
+                    canvas.height = EXPORT_HEIGHT;
+                }
+                drawScene(true, exportRenderTime); 
+
+                const frameName = `frame${String(currentFrame).padStart(4, '0')}.png`;
+                frameFileNames.push(frameName);
+                
+                try {
+                    const dataUrl = canvas.toDataURL('image/png');
+                    const blob = await (await fetch(dataUrl)).blob();
+                    const arrayBuffer = await blob.arrayBuffer();
+                    ffmpeg.FS('writeFile', frameName, new Uint8Array(arrayBuffer));
+                } catch (frameError) {
+                    console.error(`Error processing frame ${frameName}:`, frameError);
+                    showModal("Frame Processing Error", `Failed to process frame ${currentFrame + 1}. Export aborted.`);
+                    frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} });
+                    // Restore canvas to original drawing dimensions (WORLD_WIDTH/HEIGHT)
+                    canvas.width = WORLD_WIDTH; 
+                    canvas.height = WORLD_HEIGHT;
+                    loadingIndicator.classList.add('hidden');
+                    time = liveAnimationTimeAtStart; 
+                    animate(); 
+                    return;
+                }
+
+                exportRenderTime += timeStepPerVideoFrame;
+                currentFrame++;
+                setTimeout(renderAndSaveFrame, 1); 
+            }
+
+            async function compileVideo() {
+                if(loadingText) loadingText.textContent = "Encoding MP4... This may take a while.";
+                try {
+                    await ffmpeg.run('-r', String(frameRate), '-i', 'frame%04d.png', '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', 'output.mp4');
+                    const data = ffmpeg.FS('readFile', 'output.mp4');
+                    
+                    const blob = new Blob([data.buffer], { type: 'video/mp4' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url;
+                    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-'); 
+                    a.download = `drawerz_animation_${timestamp}.mp4`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                    showModal("Export Complete", "Animation exported as MP4!");
+
+                } catch (error) {
+                    console.error("FFmpeg run error:", error);
+                    showModal("FFmpeg Export Error", "Error during video encoding: " + error.message);
+                } finally {
+                    frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} });
+                    try { ffmpeg.FS('unlink', 'output.mp4'); } catch(e){}
+                    
+                    // Restore canvas to original drawing dimensions
+                    canvas.width = WORLD_WIDTH;
+                    canvas.height = WORLD_HEIGHT;
+                    // No need for resizeCanvas() as dimensions are fixed. drawScene() will use these.
+
+                    loadingIndicator.classList.add('hidden');
+                    time = liveAnimationTimeAtStart; 
+                    animate(); 
+                }
+            }
+            renderAndSaveFrame(); 
+        });
+
+        exportGifBtn.addEventListener('click', async () => {
+            if (layers.every(l => !l.isVisible || l.strokes.length === 0)) {
+                showModal("Export Error", "No visible content to export.");
+                return;
+            }
+            loadingIndicator.classList.remove('hidden');
+            if(loadingText) loadingText.textContent = "Preparing GIF export...";
+
+            const frameRate = 10; 
+            const durationSeconds = 15;
+            const totalFrames = frameRate * durationSeconds;
+            const delay = 1000 / frameRate; 
+
+            const liveAnimationTimeAtStart = time;
+            let exportRenderTime = liveAnimationTimeAtStart;
+            const globalExportAnimSpeedFactor = parseFloat(animationSliders.animationSpeed.slider.value);
+             if (globalExportAnimSpeedFactor <= 0) {
+                showModal("Export Warning", "Global Animation Speed is zero or less. The exported GIF will not show animation. Please increase the Animation Speed slider value if you want animated export.");
+            }
+            const timeStepPerVideoFrame = globalExportAnimSpeedFactor * (60 / frameRate);
+
+
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            const gif = new GIF({
+                workers: 2, quality: 10, 
+                workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
+                width: EXPORT_WIDTH, height: EXPORT_HEIGHT,
+                background: '#FFF', transparent: null 
+            });
+
+            // Ensure canvas is at EXPORT dimensions for rendering frames
+            canvas.width = EXPORT_WIDTH;
+            canvas.height = EXPORT_HEIGHT;
+
+            let currentFrame = 0;
+
+            function addGifFrame() {
+                if (currentFrame >= totalFrames) {
+                    gif.render();
+                    return;
+                }
+                if(loadingText) loadingText.textContent = `Rendering GIF frame ${currentFrame + 1} of ${totalFrames}...`;
+                
+                if(canvas.width !== EXPORT_WIDTH || canvas.height !== EXPORT_HEIGHT) {
+                    canvas.width = EXPORT_WIDTH;
+                    canvas.height = EXPORT_HEIGHT;
+                }
+                drawScene(true, exportRenderTime);
+                gif.addFrame(canvas, { copy: true, delay: delay });
+
+                exportRenderTime += timeStepPerVideoFrame;
+                currentFrame++;
+                setTimeout(addGifFrame, 10); 
+            }
+
+            gif.on('finished', function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url;
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                a.download = `drawerz_animation_${timestamp}.gif`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+
+                // Restore canvas to original drawing dimensions
+                canvas.width = WORLD_WIDTH;
+                canvas.height = WORLD_HEIGHT;
+
+                loadingIndicator.classList.add('hidden');
+                showModal("Export Complete", "Animation exported as GIF!");
+                time = liveAnimationTimeAtStart;
+                animate();
+            });
+            
+            gif.on('progress', function(p) {
+                 if(loadingText) loadingText.textContent = `Encoding GIF: ${Math.round(p * 100)}%`;
+            });
+
+            addGifFrame();
+        });
+
 
         function initializeApp() {
-            if ('serviceWorker' in navigator) { /* ... (SW registration, no changes) ... */  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js', { scope: './' }) .then(registration => { console.log('Drawerz Service Worker: Registered with scope:', registration.scope); registration.addEventListener('updatefound', () => { const newWorker = registration.installing; if (newWorker) { newWorker.addEventListener('statechange', () => { if (newWorker.state === 'activated') { if (navigator.serviceWorker.controller) { console.log('Drawerz Service Worker: New version activated.'); } else { console.log('Drawerz Service Worker: Activated for the first time. Page may need a reload for COOP/COEP headers.'); if (typeof SharedArrayBuffer === 'undefined') { showModal("Service Worker Active", "The helper Service Worker is now active. Please try reloading the page if MP4 export initially fails due to missing requirements (SharedArrayBuffer)."); } } } }); } }); }).catch(error => { console.error('Drawerz Service Worker: Registration failed:', error); }); navigator.serviceWorker.addEventListener('message', event => { if (event.data && event.data.type === 'SW_ACTIVATED') { console.log('Drawerz Service Worker: Received SW_ACTIVATED message from SW.'); if (typeof SharedArrayBuffer === 'undefined') { console.warn('SW activated, but SharedArrayBuffer still undefined. A page reload may be required for COOP/COEP headers to take effect.'); } } }); if (navigator.serviceWorker.controller && typeof SharedArrayBuffer === 'undefined') { console.warn('Page is controlled by a Service Worker, but SharedArrayBuffer is undefined. Ensure SW sets COOP/COEP headers, or try a hard refresh (Ctrl+Shift+R).'); } }); }
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js', { scope: './' }) 
+                    .then(registration => {
+                        console.log('Drawerz Service Worker: Registered with scope:', registration.scope);
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            if (newWorker) {
+                                newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') {
+                                    if (navigator.serviceWorker.controller) {
+                                    console.log('Drawerz Service Worker: New version activated.');
+                                    } else {
+                                    console.log('Drawerz Service Worker: Activated for the first time. Page may need a reload for COOP/COEP headers.');
+                                    if (typeof SharedArrayBuffer === 'undefined') {
+                                        showModal("Service Worker Active", "The helper Service Worker is now active. Please try reloading the page if MP4 export initially fails due to missing requirements (SharedArrayBuffer).");
+                                    }
+                                    }
+                                }
+                                });
+                            }
+                        });
+                    }).catch(error => {
+                        console.error('Drawerz Service Worker: Registration failed:', error);
+                    });
+                    navigator.serviceWorker.addEventListener('message', event => {
+                        if (event.data && event.data.type === 'SW_ACTIVATED') {
+                            console.log('Drawerz Service Worker: Received SW_ACTIVATED message from SW.');
+                             if (typeof SharedArrayBuffer === 'undefined') {
+                                console.warn('SW activated, but SharedArrayBuffer still undefined. A page reload may be required for COOP/COEP headers to take effect.');
+                            }
+                        }
+                    });
+                    if (navigator.serviceWorker.controller && typeof SharedArrayBuffer === 'undefined') {
+                        console.warn('Page is controlled by a Service Worker, but SharedArrayBuffer is undefined. Ensure SW sets COOP/COEP headers, or try a hard refresh (Ctrl+Shift+R).');
+                    }
+                });
+            }
+
             loadingIndicator.classList.add('hidden'); messageModal.classList.add('hidden');
             setActiveToolButton(penToolBtn); 
             strokeSizeValue.textContent = strokeSizeSlider.value;
-            pointDistanceThresholdValue.textContent = pointDistanceThresholdSlider.value;
-            MIN_POINT_DISTANCE_SQ = parseInt(pointDistanceThresholdSlider.value) * parseInt(pointDistanceThresholdSlider.value);
-            rdpToleranceValue.textContent = rdpToleranceSlider.value; RDP_TOLERANCE = parseFloat(rdpToleranceSlider.value);
-
             if (layers.length === 0) { const initialLayer = createNewLayer(1); layers.push(initialLayer); setActiveLayer(initialLayer.id); }
-            else {
-                layers.forEach(layer => {
-                    initializeLayerCanvas(layer); // Ensures offscreenCanvas and Quadtree are present
-                    rebuildLayerQuadtree(layer); // Populate quadtree for existing strokes
-                    layer.needsFullRedraw = true;
-                });
-                setActiveLayer(layers.find(l => l.isActive)?.id || (layers.length > 0 ? layers[0].id : null) ); 
-            }
-            setupCanvasDimensions(); renderLayersList(); updateAnimationSlidersForActiveLayer(); updateUndoRedoButtons(); 
-            animate(); updateCanvasCursor();
+            else setActiveLayer(layers.find(l => l.isActive)?.id || (layers.length > 0 ? layers[0].id : null) ); 
+            
+            setupCanvasDimensions(); // Sets canvas to FHD and does initial draw
+            
+            renderLayersList(); 
+            updateAnimationSlidersForActiveLayer(); 
+            updateUndoRedoButtons(); 
+            animate(); 
+            updateCanvasCursor();
         }
         addLayerBtn.addEventListener('click', addLayer);
-        document.addEventListener('keydown', function(e) { /* ... (no changes) ... */ const activeEl = document.activeElement; const isInputFocused = activeEl && (activeEl.tagName.toLowerCase() === 'input' && activeEl.type !== 'range' && activeEl.type !== 'button' && activeEl.type !== 'submit') || activeEl.tagName.toLowerCase() === 'textarea'; if (isInputFocused) return; let prevented = true; if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') saveBtn.click(); else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') document.getElementById('loadInput').click(); else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') exportMp4Btn.click(); else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'Delete') { clearAllLayersBtn.click(); }  else if ((e.ctrlKey || e.metaKey) && e.code === 'Delete') { clearActiveLayerBtn.click(); }  else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { undoBtn.click(); } else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { redoBtn.click(); } else if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey) penToolBtn.click(); else if (e.key.toLowerCase() === 'e' && !e.ctrlKey && !e.metaKey) eraserToolBtn.click(); else prevented = false; if (prevented) e.preventDefault(); });
+        document.addEventListener('keydown', function(e) {
+            const activeEl = document.activeElement;
+            const isInputFocused = activeEl && (activeEl.tagName.toLowerCase() === 'input' && activeEl.type !== 'range' && activeEl.type !== 'button' && activeEl.type !== 'submit') || activeEl.tagName.toLowerCase() === 'textarea';
+            if (isInputFocused) return; 
+            let prevented = true; 
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') saveBtn.click();
+            else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') document.getElementById('loadInput').click();
+            else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') exportMp4Btn.click();
+            else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'Delete') { clearAllLayersBtn.click(); } 
+            else if ((e.ctrlKey || e.metaKey) && e.code === 'Delete') { clearActiveLayerBtn.click(); } 
+            else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { undoBtn.click(); }
+            else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { redoBtn.click(); }
+            else if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.metaKey) penToolBtn.click();
+            else if (e.key.toLowerCase() === 'e' && !e.ctrlKey && !e.metaKey) eraserToolBtn.click();
+            // H for hand tool and R for reset view removed from shortcuts
+            else prevented = false;
+            if (prevented) e.preventDefault();
+        });
         initializeApp();
     </script>
 </body>
