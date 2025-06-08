@@ -7,12 +7,12 @@
 
     <link rel="icon" type="image/png" href="icon-logo.png">
 
-    <meta name="description" content="Drawerz Beta 3: A creative web application for drawing, animating strokes with layers, and exporting your artwork as MP4 or GIF. Features include dynamic brushes, layer management, blending modes, clipping masks, and various animation effects.">
-    <meta name="keywords" content="drawing app, animation tool, vector graphics, layers, sketchpad, online drawing, html5 canvas, javascript animation, export mp4, export gif, blend modes, clipping mask, Drawerz">
+    <meta name="description" content="Drawerz Beta 3: A creative web application for drawing, animating strokes with layers, and exporting your artwork as MP4 or GIF. Features include dynamic brushes, layer management, and various animation effects.">
+    <meta name="keywords" content="drawing app, animation tool, vector graphics, layers, sketchpad, online drawing, html5 canvas, javascript animation, export mp4, export gif, Drawerz">
     <meta name="author" content="Bixrail & Your Name/Studio"> <link rel="canonical" href="https://your-drawerz-beta-3-url.com/"> <meta name="robots" content="index, follow">
 
-    <meta property="og:title" content="Drawerz Beta 3 - Animated Sketchpad with Advanced Layers">
-    <meta property="og:description" content="Create and animate drawings with layers, blend modes, and clipping masks. Export to MP4 or GIF.">
+    <meta property="og:title" content="Drawerz Beta 3 - Animated Sketchpad">
+    <meta property="og:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://your-drawerz-beta-3-url.com/"> <meta property="og:image" content="chat-logo.png"> 
     <meta property="og:image:width" content="1200">
@@ -20,8 +20,8 @@
     <meta property="og:site_name" content="Drawerz Beta 3">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Drawerz Beta 3 - Animated Sketchpad with Advanced Layers">
-    <meta name="twitter:description" content="Create and animate drawings with layers, blend modes, and clipping masks. Export to MP4 or GIF.">
+    <meta name="twitter:title" content="Drawerz Beta 3 - Animated Sketchpad">
+    <meta name="twitter:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
     <meta name="twitter:image" content="chat-logo.png"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
 </head>
 <body class="bg-gray-900 text-white flex flex-col h-screen overflow-hidden">
     <style>
-        /* Base styles (mostly unchanged) */
+        /* Base styles */
         body, html {
             font-family: 'Montserrat', sans-serif !important; 
             overscroll-behavior: none;
@@ -44,20 +44,14 @@
         }
 
         .header {
-            background-color: #1f2937; 
-            padding: 0.75rem 1rem; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #374151; 
-            flex-shrink: 0; 
-            z-index: 20; 
+            background-color: #1f2937; padding: 0.75rem 1rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #374151; flex-shrink: 0; z-index: 20; 
         }
         .header-logo-link { display: inline-block; }
         .header-logo { height: 32px; width: auto; object-fit: contain; vertical-align: middle; }
         .header-buttons { display: flex; gap: 0.5rem; align-items: center; flex-wrap: nowrap; }
-        .control-panel-toggle { display: none; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; font-family: 'Montserrat', sans-serif; }
+        .control-panel-toggle { display: none; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; }
 
         .main-content { display: flex; flex: 1; overflow: hidden; position: relative; }
         .canvas-container {
@@ -110,95 +104,52 @@
         #loadInput { display: none; }
 
         .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        .form-label { font-size: 0.8rem; font-weight: 500; color: #9ca3af; font-family: 'Montserrat', sans-serif; }
+        .form-label { font-size: 0.8rem; font-weight: 500; color: #9ca3af; }
         .form-label span { color: #e5e7eb; } 
-        input[type="range"] { width: 100%; height: 0.5rem; background-color: #374151; border-radius: 9999px; appearance: none; cursor: pointer; transition: background-color 0.15s ease-in-out; }
-        input[type="range"]:hover { background-color: #4b5563; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 1rem; height: 1rem; background: #3b82f6; border-radius: 50%; cursor: pointer; border: 2px solid white; transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out; }
-        input[type="range"]::-moz-range-thumb { width: 0.8rem; height: 0.8rem; background: #3b82f6; border-radius: 50%; cursor: pointer; border: 2px solid white; transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out; }
-        input[type="range"]:hover::-webkit-slider-thumb { background: #2563eb; transform: scale(1.1); }
-        input[type="range"]:hover::-moz-range-thumb { background: #2563eb; transform: scale(1.1); }
+        input[type="range"] { width: 100%; height: 0.5rem; background-color: #374151; border-radius: 9999px; appearance: none; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 1rem; height: 1rem; background: #3b82f6; border-radius: 50%; cursor: pointer; border: 2px solid white; }
+        input[type="range"]::-moz-range-thumb { width: 0.8rem; height: 0.8rem; background: #3b82f6; border-radius: 50%; cursor: pointer; border: 2px solid white; }
         input[type="color"] { width: 100%; height: 2.25rem; padding: 0.125rem; background-color: #374151; border: 1px solid #4b5563; border-radius: 0.375rem; cursor: pointer; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.25rem; }
         input[type="color"]::-moz-color-swatch { border: none; border-radius: 0.25rem; }
-        
-        select.form-control {
-            background-color: #374151; color: #d1d5db; border: 1px solid #4b5563;
-            border-radius: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.8rem;
-            width: 100%; font-family: 'Montserrat', sans-serif;
-        }
-        select.form-control:hover { border-color: #6b7280; }
-        select.form-control:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
 
-
-        .footer { padding: 0.75rem; background-color: #1f2937; color: #6b7280; text-align: center; font-size: 0.75rem; border-top: 1px solid #374151; flex-shrink: 0; font-family: 'Montserrat', sans-serif;}
+        .footer { padding: 0.75rem; background-color: #1f2937; color: #6b7280; text-align: center; font-size: 0.75rem; border-top: 1px solid #374151; flex-shrink: 0; }
         .hidden { display: none !important; }
         #loadingIndicator { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
         .loading-content { display: flex; flex-direction: column; align-items: center; gap: 1rem; background-color: #1f2937; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); color: #e5e7eb; }
-        .loading-content span { font-family: 'Montserrat', sans-serif; } 
         .spinner { border: 4px solid #4b5563; border-top-color: #3b82f6; border-radius: 50%; width: 2.5rem; height: 2.5rem; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .modal { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.8); display: flex; justify-content: center; align-items: center; z-index: 100; padding: 1rem; }
-        .modal-content { background-color: #1f2937; color: #e5e7eb; padding: 1.5rem 2rem; border-radius: 0.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); max-width: 36rem; width: 100%; text-align: left; display: flex; flex-direction: column; gap: 1rem; font-family: 'Montserrat', sans-serif;}
+        .modal-content { background-color: #1f2937; color: #e5e7eb; padding: 1.5rem 2rem; border-radius: 0.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); max-width: 36rem; width: 100%; }
         .modal-title { font-size: 1.25rem; font-weight: 600; color: white; }
         .modal-message { color: #d1d5db; font-size: 0.925rem; line-height: 1.6; }
-        .modal-message ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.5rem; }
-        .modal-message code { background-color: #374151; padding: 0.1em 0.4em; border-radius: 0.25rem; font-size: 0.85em; }
         .modal-button-container { display: flex; justify-content: flex-end; margin-top: 1rem; }
-        .modal-button { background-color: #3b82f6; color: white; font-weight: 500; padding: 0.625rem 1.25rem; border-radius: 0.375rem; border: 1px solid #3b82f6; font-family: 'Montserrat', sans-serif !important; }
-        .modal-button:hover { background-color: #2563eb; border-color: #2563eb; }
+        .modal-button { background-color: #3b82f6; color: white; font-weight: 500; padding: 0.625rem 1.25rem; border-radius: 0.375rem; border: 1px solid #3b82f6; }
 
         .layers-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto; border: 1px solid #374151; border-radius: 0.375rem; padding: 0.5rem; }
-        .layer-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 0.25rem; background-color: #1f2937; border: 1px solid #374151; cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease; }
+        .layer-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 0.25rem; background-color: #1f2937; border: 1px solid #374151; cursor: pointer; }
         .layer-item:hover { background-color: #2d3748; }
         .layer-item.active-layer { background-color: #3b82f6; border-color: #2563eb; color: white; }
-        .layer-item.active-layer .layer-name, .layer-item.active-layer .layer-opacity-value, .layer-item.active-layer select { color: white; }
-        .layer-item.active-layer select { background-color: #2563eb; border-color: #1d4ed8; }
-
-        .layer-item-main-controls { display: flex; align-items: center; gap: 0.5rem; }
         .layer-name { flex-grow: 1; font-size: 0.8rem; color: #d1d5db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .layer-name-input { flex-grow: 1; font-size: 0.8rem; background-color: #374151; color: white; border: 1px solid #4b5563; border-radius: 0.25rem; padding: 0.25rem 0.5rem; font-family: 'Montserrat', sans-serif; }
-        .layer-item-extra-controls { display: flex; flex-direction: column; gap: 0.3rem; grid-column: 1 / -1; margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px solid #37415133;}
-        .layer-item-extra-controls .form-group { gap: 0.2rem; }
-        .layer-item-extra-controls .form-label { font-size: 0.7rem; margin-bottom: 0.1rem; }
-        .layer-item-extra-controls select.form-control { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
-        .layer-item-extra-controls .btn { font-size: 0.7rem; padding: 0.2rem 0.4rem; }
-        .layer-item-extra-controls input[type="checkbox"] { width: 0.8rem; height: 0.8rem; accent-color: #3b82f6; }
-
-
-        .layer-item-buttons { display: flex; gap: 0.25rem; }
-        .layer-item-buttons .btn { padding: 0.25rem 0.375rem; font-size: 0.7rem; } 
-        
+        .layer-name-input { flex-grow: 1; font-size: 0.8rem; background-color: #374151; color: white; border: 1px solid #4b5563; border-radius: 0.25rem; padding: 0.25rem 0.5rem; }
+        .layer-controls { display: flex; gap: 0.25rem; }
+        .layer-controls .btn { padding: 0.25rem 0.375rem; font-size: 0.7rem; } 
         .layer-opacity-control { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.5rem; }
-        .layer-opacity-control input[type="range"] { height: 0.4rem; }
-        .layer-opacity-control .form-label { font-size: 0.8rem; }
         .layer-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
         .layer-actions .btn { flex-grow: 1; min-width: 80px; } 
 
         ::-webkit-scrollbar { width: 0.5rem; height: 0.5rem; } 
         ::-webkit-scrollbar-track { background: #1f2937; }
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 0.25rem; }
-        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
 
         @media (max-width: 900px) { 
-            .header-title { font-size: 1.1rem; }
             .header-buttons .btn span { display: none; } 
             .header-buttons .btn i { margin-right: 0; } 
-            .header-buttons .btn { padding: 0.5rem; } 
-            .control-panel { position: absolute; right: 0; top: 0; bottom: 0; transform: translateX(100%); border-left: 1px solid #374151; box-shadow: -2px 0 10px rgba(0,0,0,0.3); width: 280px; }
+            .control-panel { position: absolute; right: 0; top: 0; bottom: 0; transform: translateX(100%); width: 280px; }
             .control-panel.open { transform: translateX(0); }
             .control-panel-toggle { display: block; }
         }
-         @media (max-width: 480px) { 
-            .header-buttons { gap: 0.25rem; }
-            .header-buttons .btn { padding: 0.4rem; font-size: 0.7rem; }
-            .header-buttons .btn i { font-size: 0.8em; }
-            .control-panel { width: calc(100% - 40px); max-width: 280px; } 
-            .section-title { font-size: 1rem; }
-            .form-label { font-size: 0.75rem; }
-            .layer-name, .layer-name-input { font-size: 0.75rem; }
-         }
     </style>
 
     <header class="header">
@@ -245,14 +196,11 @@
                 <div id="layersList" class="layers-list"></div>
                 <div class="layer-actions">
                     <button id="addLayerBtn" class="btn btn-primary" title="Add New Layer"><i class="fas fa-plus-circle"></i> Add Layer</button>
-                    <button id="mergeDownBtn" class="btn" title="Merge Down"><i class="fas fa-layer-group"></i> Merge Down</button>
                 </div>
-                <div id="selectedLayerControls" class="hidden">
-                    <div class="form-group layer-opacity-control">
-                        <label for="layerOpacity" class="form-label">Layer Opacity: <span id="layerOpacityValue">100</span>%</label>
-                        <input type="range" id="layerOpacity" min="0" max="100" value="100">
-                    </div>
-                    </div>
+                <div id="selectedLayerOpacityControl" class="form-group hidden layer-opacity-control">
+                    <label for="layerOpacity" class="form-label">Layer Opacity: <span id="layerOpacityValue">100</span>%</label>
+                    <input type="range" id="layerOpacity" min="0" max="100" value="100">
+                </div>
             </div>
 
             <div class="section">
@@ -304,47 +252,34 @@
 
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
-        // Offscreen canvases for compositing
-        let groupCompositeCanvas = document.createElement('canvas');
-        let groupCompositeCtx = groupCompositeCanvas.getContext('2d');
-        let clipContentCanvas = document.createElement('canvas');
-        let clipContentCtx = clipContentCanvas.getContext('2d');
-
 
         const penToolBtn = document.getElementById('penTool');
         const eraserToolBtn = document.getElementById('eraserTool');
-
         const strokeSizeSlider = document.getElementById('strokeSize');
         const strokeSizeValue = document.getElementById('strokeSizeValue');
         const strokeColorPicker = document.getElementById('strokeColor');
         const clearActiveLayerBtn = document.getElementById('clearActiveLayerBtn');
         const clearAllLayersBtn = document.getElementById('clearAllLayersBtn');
-
         const animationSliders = {
             wiggleIntensity: { slider: document.getElementById('wiggleIntensity'), valueEl: document.getElementById('wiggleIntensityValue'), suffix: '' },
             breathingStroke: { slider: document.getElementById('breathingStroke'), valueEl: document.getElementById('breathingStrokeValue'), suffix: '' },
             shakeIntensity: { slider: document.getElementById('shakeIntensity'), valueEl: document.getElementById('shakeIntensityValue'), suffix: '' },
             animationSpeed: { slider: document.getElementById('animationSpeed'), valueEl: document.getElementById('animationSpeedValue'), suffix: 'x' }
         };
-
         const saveBtn = document.getElementById('saveBtn');
         const loadInput = document.getElementById('loadInput');
         const exportMp4Btn = document.getElementById('exportMp4Btn'); 
         const exportGifBtn = document.getElementById('exportGifBtn'); 
         const loadingIndicator = document.getElementById('loadingIndicator');
         const loadingText = document.getElementById('loadingText'); 
-        
         const messageModal = document.getElementById('messageModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
-
         const layersListContainer = document.getElementById('layersList');
         const addLayerBtn = document.getElementById('addLayerBtn');
-        const mergeDownBtn = document.getElementById('mergeDownBtn');
-        const selectedLayerControls = document.getElementById('selectedLayerControls'); // General controls for active layer
+        const selectedLayerOpacityControl = document.getElementById('selectedLayerOpacityControl');
         const layerOpacitySlider = document.getElementById('layerOpacity');
         const layerOpacityValue = document.getElementById('layerOpacityValue');
-        
         const controlPanel = document.getElementById('controlPanel');
         const controlPanelToggle = document.getElementById('controlPanelToggle');
         const canvasContainer = document.getElementById('canvasContainer');
@@ -353,10 +288,8 @@
         let currentTool = 'pen';
         let currentStrokeSize = 10;
         let currentStrokeColor = '#000000';
-        
         let layers = [];
         let activeLayerId = null;
-
         let lastX, lastY;
         let animationFrameId;
         let time = 0; 
@@ -365,28 +298,13 @@
 
         const WORLD_WIDTH = 1920;
         const WORLD_HEIGHT = 1080;
-
         let viewTransform = { scale: 1, offsetX: 0, offsetY: 0 };
-        
         const EXPORT_WIDTH = 1920; 
         const EXPORT_HEIGHT = 1080; 
-
-        const BLEND_MODES = [
-            { name: 'Normal', value: 'source-over' }, { name: 'Multiply', value: 'multiply' },
-            { name: 'Screen', value: 'screen' }, { name: 'Overlay', value: 'overlay' },
-            { name: 'Darken', value: 'darken' }, { name: 'Lighten', value: 'lighten' }, // 'lighter' is often 'Add'
-            { name: 'Color Dodge', value: 'color-dodge' }, { name: 'Color Burn', value: 'color-burn' },
-            { name: 'Hard Light', value: 'hard-light' }, { name: 'Soft Light', value: 'soft-light' },
-            { name: 'Difference', value: 'difference' }, { name: 'Exclusion', value: 'exclusion' },
-            { name: 'Hue', value: 'hue' }, { name: 'Saturation', value: 'saturation' },
-            { name: 'Color', value: 'color' }, { name: 'Luminosity', value: 'luminosity' }
-        ];
-
 
         function generateLayerId() { return Date.now() + Math.random().toString(36).substr(2, 9); }
         function getActiveLayer() { return layers.find(layer => layer.id === activeLayerId); }
         function getLayerIndex(layerId) { return layers.findIndex(l => l.id === layerId); }
-
 
         function setActiveToolButton(activeBtn) {
             [penToolBtn, eraserToolBtn].forEach(btn => btn.classList.remove('active-tool'));
@@ -459,18 +377,10 @@
         function setupCanvasDimensions() {
             canvas.width = WORLD_WIDTH;
             canvas.height = WORLD_HEIGHT;
-            // Setup offscreen canvases too
-            groupCompositeCanvas.width = WORLD_WIDTH;
-            groupCompositeCanvas.height = WORLD_HEIGHT;
-            clipContentCanvas.width = WORLD_WIDTH;
-            clipContentCanvas.height = WORLD_HEIGHT;
             drawScene();
         }
         
-        window.addEventListener('resize', () => {
-            // Potentially resize offscreen canvases if main canvas could change size (not in this fixed setup)
-            drawScene(); 
-        });
+        window.addEventListener('resize', () => { drawScene(); });
         
         controlPanelToggle.addEventListener('click', () => {
             controlPanel.classList.toggle('open');
@@ -488,7 +398,7 @@
             });
         }
 
-        function createNewLayer(nameSuffix = layers.length + 1, strokes = [], customAnimationSettings = null, isVisible = true, opacity = 1, isActive = false, blendMode = 'source-over', isClippingMask = false) {
+        function createNewLayer(nameSuffix = layers.length + 1, strokes = [], customAnimationSettings = null, isVisible = true, opacity = 1, isActive = false) {
             const defaultAnimSettings = {};
             for (const key in animationSliders) {
                 defaultAnimSettings[key] = parseFloat(animationSliders[key].slider.defaultValue || animationSliders[key].slider.value);
@@ -496,8 +406,7 @@
             return {
                 id: generateLayerId(), name: `Layer ${nameSuffix}`, strokes: strokes,
                 animationSettings: customAnimationSettings || defaultAnimSettings,
-                isVisible: isVisible, opacity: opacity, isActive: isActive,
-                blendMode: blendMode, isClippingMask: isClippingMask
+                isVisible: isVisible, opacity: opacity, isActive: isActive
             };
         }
 
@@ -508,7 +417,6 @@
             if (activeLayerIndex !== -1 && activeLayerIndex < layers.length -1) layers.splice(activeLayerIndex + 1, 0, newLayer);
             else layers.push(newLayer); 
             setActiveLayer(newLayer.id); 
-            // renderLayersList is called by setActiveLayer
             updateAnimationSlidersForActiveLayer();
         }
 
@@ -521,13 +429,12 @@
                 currentActiveLayer.isActive = true;
                 layerOpacitySlider.value = currentActiveLayer.opacity * 100;
                 layerOpacityValue.textContent = Math.round(currentActiveLayer.opacity * 100);
-                selectedLayerControls.classList.remove('hidden');
+                selectedLayerOpacityControl.classList.remove('hidden');
             } else {
-                selectedLayerControls.classList.add('hidden');
+                selectedLayerOpacityControl.classList.add('hidden');
             }
             renderLayersList(); 
             updateAnimationSlidersForActiveLayer();
-            updateMergeDownButtonState();
         }
         
         layerOpacitySlider.addEventListener('input', (e) => {
@@ -543,8 +450,7 @@
             layersListContainer.innerHTML = ''; 
             if (layers.length === 0) {
                 layersListContainer.innerHTML = '<p class="text-gray-500 text-sm p-2 text-center">No layers yet.</p>';
-                selectedLayerControls.classList.add('hidden'); 
-                updateMergeDownButtonState();
+                selectedLayerOpacityControl.classList.add('hidden'); 
                 return;
             }
             [...layers].reverse().forEach((layer) => { 
@@ -552,10 +458,7 @@
                 item.className = `layer-item ${layer.id === activeLayerId ? 'active-layer' : ''}`;
                 item.dataset.layerId = layer.id;
                 item.onclick = () => setActiveLayer(layer.id);
-
-                // Main controls: visibility, name
-                const mainControlsDiv = document.createElement('div');
-                mainControlsDiv.className = 'layer-item-main-controls';
+                
                 const visibilityBtn = document.createElement('button');
                 visibilityBtn.className = 'btn btn-sm';
                 visibilityBtn.innerHTML = `<i class="fas ${layer.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
@@ -565,11 +468,9 @@
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'layer-name'; nameSpan.textContent = layer.name; nameSpan.title = "Double-click to Rename";
                 nameSpan.ondblclick = (e) => { e.stopPropagation(); makeLayerNameEditable(layer.id, nameSpan); };
-                mainControlsDiv.append(visibilityBtn, nameSpan);
-
-                // Action buttons: up, down, delete
-                const actionButtonsDiv = document.createElement('div');
-                actionButtonsDiv.className = 'layer-item-buttons';
+                
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = 'layer-controls';
                 const upBtn = document.createElement('button'); upBtn.className = 'btn btn-sm'; upBtn.innerHTML = '<i class="fas fa-arrow-up"></i>'; upBtn.title = "Move Up";
                 upBtn.disabled = getLayerIndex(layer.id) === layers.length - 1; 
                 upBtn.onclick = (e) => { e.stopPropagation(); moveLayer(layer.id, 'up'); };
@@ -582,68 +483,15 @@
 
                 const deleteBtn = document.createElement('button'); deleteBtn.className = 'btn btn-sm btn-danger'; deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>'; deleteBtn.title = "Delete Layer";
                 deleteBtn.onclick = (e) => { e.stopPropagation(); deleteLayer(layer.id); };
-                actionButtonsDiv.append(upBtn, downBtn, deleteBtn);
+                controlsDiv.append(upBtn, downBtn, deleteBtn);
 
-                item.append(mainControlsDiv, actionButtonsDiv); // Will adjust grid later
-
-                // Extra controls: Blend Mode, Clipping Mask (only if active)
-                if (layer.id === activeLayerId) {
-                    const extraControlsDiv = document.createElement('div');
-                    extraControlsDiv.className = 'layer-item-extra-controls';
-
-                    // Blend Mode Dropdown
-                    const blendGroup = document.createElement('div');
-                    blendGroup.className = 'form-group';
-                    const blendLabel = document.createElement('label');
-                    blendLabel.className = 'form-label';
-                    blendLabel.textContent = 'Blend Mode:';
-                    blendLabel.htmlFor = `blendMode-${layer.id}`;
-                    const blendSelect = document.createElement('select');
-                    blendSelect.className = 'form-control';
-                    blendSelect.id = `blendMode-${layer.id}`;
-                    BLEND_MODES.forEach(mode => {
-                        const option = document.createElement('option');
-                        option.value = mode.value; option.textContent = mode.name;
-                        if (layer.blendMode === mode.value) option.selected = true;
-                        blendSelect.appendChild(option);
-                    });
-                    blendSelect.onchange = (e) => { e.stopPropagation(); layer.blendMode = e.target.value; drawScene(); saveStateForUndo();};
-                    blendSelect.onclick = (e) => e.stopPropagation(); // Prevent layer selection change
-                    blendGroup.append(blendLabel, blendSelect);
-                    extraControlsDiv.appendChild(blendGroup);
-
-                    // Clipping Mask Toggle
-                    const clipGroup = document.createElement('div');
-                    clipGroup.className = 'form-group flex flex-row items-center gap-2 mt-1';
-                    const clipCheckbox = document.createElement('input');
-                    clipCheckbox.type = 'checkbox';
-                    clipCheckbox.id = `clipMask-${layer.id}`;
-                    clipCheckbox.checked = layer.isClippingMask;
-                    clipCheckbox.className = "form-checkbox h-4 w-4 text-blue-600 border-gray-500 rounded focus:ring-blue-500";
-                    clipCheckbox.onchange = (e) => { e.stopPropagation(); layer.isClippingMask = e.target.checked; renderLayersList(); drawScene(); saveStateForUndo();}; // Re-render list for icon
-                    clipCheckbox.onclick = (e) => e.stopPropagation();
-                    const clipLabel = document.createElement('label');
-                    clipLabel.className = 'form-label text-xs';
-                    clipLabel.textContent = 'Clipping Mask';
-                    clipLabel.htmlFor = `clipMask-${layer.id}`;
-                    clipGroup.append(clipCheckbox, clipLabel);
-                    
-                    // Visual indicator for clipping mask on the layer name
-                    if (layer.isClippingMask) {
-                        nameSpan.innerHTML = `<i class="fas fa-caret-down fa-rotate-270 mr-1 text-xs opacity-70"></i> ${layer.name}`;
-                        item.classList.add('is-clipping-mask-item'); // For potential indenting via CSS
-                    }
-
-
-                    extraControlsDiv.appendChild(clipGroup);
-                    item.appendChild(extraControlsDiv);
-                }
+                item.append(visibilityBtn, nameSpan, controlsDiv);
                 layersListContainer.appendChild(item);
             });
+            
             const activeLayer = getActiveLayer();
-            if (activeLayer) selectedLayerControls.classList.remove('hidden');
-            else selectedLayerControls.classList.add('hidden');
-            updateMergeDownButtonState();
+            if (activeLayer) selectedLayerOpacityControl.classList.remove('hidden');
+            else selectedLayerOpacityControl.classList.add('hidden');
         }
         
         function makeLayerNameEditable(layerId, nameSpan) {
@@ -652,7 +500,7 @@
             nameSpan.replaceWith(input); input.focus(); input.select();
             const saveName = () => {
                 saveStateForUndo(); layer.name = input.value.trim() || `Layer ${getLayerIndex(layerId) + 1}`;
-                renderLayersList(); // Re-render to update name
+                renderLayersList();
             };
             input.onblur = saveName; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); else if (e.key === 'Escape') { input.value = layer.name; input.blur(); renderLayersList(); }};
         }
@@ -674,7 +522,7 @@
                     if (layers.length > 0) {
                          setActiveLayer(layers[Math.max(0, deletedLayerIndex -1)].id);
                     } else {
-                        activeLayerId = null; // No layers left
+                        activeLayerId = null; 
                     }
                 }
                 renderLayersList(); drawScene(); closeModal(messageModal);
@@ -687,48 +535,6 @@
             else if (direction === 'down' && index > 0) [layers[index], layers[index - 1]] = [layers[index - 1], layers[index]];
             renderLayersList(); drawScene();
         }
-        
-        mergeDownBtn.addEventListener('click', () => {
-            const activeLayer = getActiveLayer();
-            if (!activeLayer) return;
-            const activeIndex = getLayerIndex(activeLayerId);
-            if (activeIndex === -1 || activeIndex === 0) { // Cannot merge down if it's the bottom layer or no active layer
-                showModal("Merge Down", "Cannot merge down. No layer below or only one layer exists.");
-                return;
-            }
-            const layerBelow = layers[activeIndex - 1];
-            showModal("Confirm Merge Down", `Merge layer "${activeLayer.name}" down into "${layerBelow.name}"? This cannot be undone easily after other actions.`,
-            [{text: "Merge", class: 'btn-primary', action: () => {
-                saveStateForUndo();
-                // Add strokes from active layer to layer below
-                // Note: Strokes will adopt properties (animations) of the target layer.
-                // Opacity/Blend mode of merged strokes will be that of the target layer.
-                layerBelow.strokes.push(...activeLayer.strokes);
-                
-                // Remove active layer
-                layers.splice(activeIndex, 1);
-                
-                // Set the layer below as active
-                setActiveLayer(layerBelow.id);
-                
-                renderLayersList();
-                drawScene();
-                closeModal(messageModal);
-                updateMergeDownButtonState();
-            }}, {text: "Cancel", class: 'btn', action: () => closeModal(messageModal)}], true);
-        });
-
-        function updateMergeDownButtonState() {
-            const activeIndex = getLayerIndex(activeLayerId);
-            if (activeIndex !== -1 && activeIndex > 0 && layers.length > 1) {
-                mergeDownBtn.disabled = false;
-                mergeDownBtn.classList.remove('btn-disabled');
-            } else {
-                mergeDownBtn.disabled = true;
-                mergeDownBtn.classList.add('btn-disabled');
-            }
-        }
-
 
         function updateAnimationSlidersForActiveLayer() {
             const activeLayer = getActiveLayer();
@@ -754,7 +560,7 @@
                 if (activeLayer) {
                     const key = Object.keys(animationSliders).find(k => animationSliders[k].slider === e.target);
                     if (key) {
-                        saveStateForUndo(); // Save state when animation slider changes
+                        saveStateForUndo();
                         activeLayer.animationSettings[key] = parseFloat(e.target.value);
                         item.valueEl.textContent = e.target.value + (item.suffix || '');
                     }
@@ -820,7 +626,7 @@
                     currentPath.points.push({ x: x, y: y });
                     ctx.save();
                     ctx.globalAlpha = activeLayer.opacity; 
-                    ctx.globalCompositeOperation = 'source-over'; // Live drawing is always source-over on top
+                    ctx.globalCompositeOperation = 'source-over';
                     ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);         
                     ctx.strokeStyle = currentPath.color; ctx.lineWidth = currentPath.size;
                     ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
@@ -870,8 +676,8 @@
                 redoStack.push({ layers: JSON.parse(JSON.stringify(layers)), activeLayerId: activeLayerId, viewTransform: { ...viewTransform } });
                 const prevState = undoStack.pop();
                 layers = prevState.layers;
-                activeLayerId = prevState.activeLayerId; // Restore active layer ID
-                layers.forEach(l => l.isActive = (l.id === activeLayerId)); // Ensure isActive flags are correct
+                activeLayerId = prevState.activeLayerId;
+                layers.forEach(l => l.isActive = (l.id === activeLayerId));
                 renderLayersList(); updateAnimationSlidersForActiveLayer(); drawScene(); updateUndoRedoButtons();
             }
         });
@@ -881,67 +687,11 @@
                 undoStack.push({ layers: JSON.parse(JSON.stringify(layers)), activeLayerId: activeLayerId, viewTransform: { ...viewTransform } });
                 const nextState = redoStack.pop();
                 layers = nextState.layers;
-                activeLayerId = nextState.activeLayerId; // Restore active layer ID
-                layers.forEach(l => l.isActive = (l.id === activeLayerId)); // Ensure isActive flags are correct
+                activeLayerId = nextState.activeLayerId;
+                layers.forEach(l => l.isActive = (l.id === activeLayerId));
                 renderLayersList(); updateAnimationSlidersForActiveLayer(); drawScene(); updateUndoRedoButtons();
             }
         });
-
-        // Helper to draw a single layer's content to a given context
-        function drawSingleLayerContentToContext(targetContext, layer, currentTime, canvasWidth, canvasHeight) {
-            if (!layer.isVisible || layer.strokes.length === 0) return;
-
-            const animSettings = layer.animationSettings;
-            const animSpeed = parseFloat(animSettings.animationSpeed); 
-            const wiggleAmp = parseFloat(animSettings.wiggleIntensity);
-            const breathAmount = parseFloat(animSettings.breathingStroke);
-            const shakeAmount = parseFloat(animSettings.shakeIntensity);
-
-            layer.strokes.forEach(stroke => {
-                if (!stroke.points || stroke.points.length < 1) return;
-                targetContext.save(); 
-
-                if (shakeAmount > 0) { 
-                    const shakeX = (Math.random() - 0.5) * shakeAmount * animSpeed; 
-                    const shakeY = (Math.random() - 0.5) * shakeAmount * animSpeed;
-                    targetContext.translate(shakeX, shakeY);
-                }
-
-                let currentDynamicSize = stroke.originalSize;
-                if (breathAmount > 0) {
-                    currentDynamicSize = stroke.originalSize + Math.sin(currentTime * 0.1 * animSpeed + stroke.birthTime) * breathAmount;
-                    currentDynamicSize = Math.max(1, currentDynamicSize);
-                }
-                
-                if (stroke.tool === 'pen') {
-                    targetContext.beginPath();
-                    if (stroke.points.length === 1) { 
-                        const p = stroke.points[0];
-                        const radius = currentDynamicSize / 2;
-                        targetContext.arc(p.x, p.y, radius, 0, Math.PI * 2);
-                        targetContext.fillStyle = stroke.color; 
-                        targetContext.fill();
-                    } else { 
-                        for (let i = 0; i < stroke.points.length; i++) {
-                            let p = { ...stroke.points[i] }; 
-                            if (wiggleAmp > 0 && i > 0) {
-                                const prevP = stroke.points[i-1]; const dx = p.x - prevP.x; const dy = p.y - prevP.y;
-                                const angle = Math.atan2(dy, dx); const normalAngle = angle + Math.PI / 2; 
-                                const wiggleOffset = Math.sin(currentTime * 0.1 * animSpeed + i * 0.5 + stroke.birthTime * 0.01) * wiggleAmp;
-                                p.x += Math.cos(normalAngle) * wiggleOffset; p.y += Math.sin(normalAngle) * wiggleOffset;
-                            }
-                            if (i === 0) targetContext.moveTo(p.x, p.y); else targetContext.lineTo(p.x, p.y);
-                        }
-                        targetContext.strokeStyle = stroke.color;
-                        targetContext.lineWidth = currentDynamicSize;
-                        targetContext.lineCap = 'round'; targetContext.lineJoin = 'round'; 
-                        targetContext.stroke();
-                    }
-                }
-                targetContext.restore(); 
-            });
-        }
-
 
         function drawScene(isExporting = false, exportTimeOverride = null) {
             const currentTime = isExporting ? exportTimeOverride : time;
@@ -949,83 +699,68 @@
             const currentCanvasWidth = isExporting ? EXPORT_WIDTH : canvas.width;
             const currentCanvasHeight = isExporting ? EXPORT_HEIGHT : canvas.height;
 
-            // Ensure main canvas and offscreen canvases are correct size for current operation
             if (canvas.width !== currentCanvasWidth || canvas.height !== currentCanvasHeight) {
                 canvas.width = currentCanvasWidth; canvas.height = currentCanvasHeight;
-            }
-            if (groupCompositeCanvas.width !== currentCanvasWidth || groupCompositeCanvas.height !== currentCanvasHeight) {
-                groupCompositeCanvas.width = currentCanvasWidth; groupCompositeCanvas.height = currentCanvasHeight;
-            }
-            if (clipContentCanvas.width !== currentCanvasWidth || clipContentCanvas.height !== currentCanvasHeight) {
-                clipContentCanvas.width = currentCanvasWidth; clipContentCanvas.height = currentCanvasHeight;
             }
             
             targetCtx.fillStyle = '#FFFFFF'; 
             targetCtx.fillRect(0, 0, currentCanvasWidth, currentCanvasHeight);
-            targetCtx.globalAlpha = 1.0;
-            targetCtx.globalCompositeOperation = 'source-over';
 
+            layers.forEach(layer => {
+                if (!layer.isVisible || layer.strokes.length === 0) return;
+                targetCtx.save(); 
+                targetCtx.globalAlpha = layer.opacity; 
+                targetCtx.globalCompositeOperation = 'source-over'; // Simplified: no blend modes
 
-            for (let i = 0; i < layers.length; i++) {
-                const baseLayer = layers[i];
-                if (!baseLayer.isVisible) continue;
+                const animSettings = layer.animationSettings;
+                const animSpeed = parseFloat(animSettings.animationSpeed); 
+                const wiggleAmp = parseFloat(animSettings.wiggleIntensity);
+                const breathAmount = parseFloat(animSettings.breathingStroke);
+                const shakeAmount = parseFloat(animSettings.shakeIntensity);
 
-                // If this layer is a clipping mask, it's handled by its base. Skip.
-                if (baseLayer.isClippingMask && i > 0) {
-                     // Check if the layer it's trying to clip to is visible.
-                     // If the base of a clipping mask is invisible, the clipping mask also doesn't render.
-                     const potentialBase = layers[i-1];
-                     if (!potentialBase || !potentialBase.isVisible) continue;
-                }
-
-
-                // Prepare the group composite canvas for this base layer and its clippers
-                groupCompositeCtx.clearRect(0, 0, currentCanvasWidth, currentCanvasHeight);
-                
-                // 1. Draw the base layer to the group composite canvas
-                groupCompositeCtx.globalAlpha = baseLayer.opacity;
-                drawSingleLayerContentToContext(groupCompositeCtx, baseLayer, currentTime, currentCanvasWidth, currentCanvasHeight);
-                groupCompositeCtx.globalAlpha = 1.0; // Reset alpha for internal group compositing
-
-                // 2. Process subsequent layers that clip to this baseLayer
-                let currentCompositeLayer = baseLayer; // The layer whose blend mode will be used for the next drawImage on main canvas
-                let k = i + 1;
-                while (k < layers.length && layers[k].isClippingMask && layers[k].isVisible) {
-                    const clippingLayer = layers[k];
-                    
-                    // A. Draw the clipping layer's own content (with its opacity) to a fresh temp canvas
-                    clipContentCtx.clearRect(0, 0, currentCanvasWidth, currentCanvasHeight);
-                    clipContentCtx.globalAlpha = clippingLayer.opacity;
-                    drawSingleLayerContentToContext(clipContentCtx, clippingLayer, currentTime, currentCanvasWidth, currentCanvasHeight);
-                    clipContentCtx.globalAlpha = 1.0;
-
-                    // B. Apply the clip: Use the current groupCompositeCanvas (which has the base/accumulated group) as the mask
-                    clipContentCtx.globalCompositeOperation = 'destination-in';
-                    clipContentCtx.drawImage(groupCompositeCanvas, 0, 0); 
-                    
-                    // C. Blend this (now clipped) content onto the groupCompositeCanvas
-                    // using the *clipping layer's* blend mode.
-                    groupCompositeCtx.globalCompositeOperation = clippingLayer.blendMode;
-                    groupCompositeCtx.drawImage(clipContentCanvas, 0, 0);
-                    groupCompositeCtx.globalCompositeOperation = 'source-over'; // Reset for next potential clipper in this group
-
-                    currentCompositeLayer = clippingLayer; // The last processed layer in the group determines the final blend for the group if needed
-                    k++;
-                }
-
-                // 3. Composite the entire group (base + its clipped children) onto the main canvas
-                // using the base layer's blend mode and opacity.
-                targetCtx.globalAlpha = baseLayer.opacity; // Base layer's opacity for the whole group
-                targetCtx.globalCompositeOperation = baseLayer.blendMode; // Base layer's blend mode for the whole group
-                targetCtx.drawImage(groupCompositeCanvas, 0, 0);
-                
-                i = k - 1; // Advance main loop counter past processed clipped layers
-            }
-            // Reset main context properties
-            targetCtx.globalAlpha = 1.0;
-            targetCtx.globalCompositeOperation = 'source-over';
+                layer.strokes.forEach(stroke => {
+                    if (!stroke.points || stroke.points.length < 1) return;
+                    targetCtx.save(); 
+                    if (shakeAmount > 0) { 
+                        const shakeX = (Math.random() - 0.5) * shakeAmount * animSpeed; 
+                        const shakeY = (Math.random() - 0.5) * shakeAmount * animSpeed;
+                        targetCtx.translate(shakeX, shakeY);
+                    }
+                    let currentDynamicSize = stroke.originalSize;
+                    if (breathAmount > 0) {
+                        currentDynamicSize = stroke.originalSize + Math.sin(currentTime * 0.1 * animSpeed + stroke.birthTime) * breathAmount;
+                        currentDynamicSize = Math.max(1, currentDynamicSize);
+                    }
+                    if (stroke.tool === 'pen') {
+                        targetCtx.beginPath();
+                        if (stroke.points.length === 1) { 
+                            const p = stroke.points[0];
+                            const radius = currentDynamicSize / 2;
+                            targetCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                            targetCtx.fillStyle = stroke.color; 
+                            targetCtx.fill();
+                        } else { 
+                            for (let i = 0; i < stroke.points.length; i++) {
+                                let p = { ...stroke.points[i] }; 
+                                if (wiggleAmp > 0 && i > 0) {
+                                    const prevP = stroke.points[i-1]; const dx = p.x - prevP.x; const dy = p.y - prevP.y;
+                                    const angle = Math.atan2(dy, dx); const normalAngle = angle + Math.PI / 2; 
+                                    const wiggleOffset = Math.sin(currentTime * 0.1 * animSpeed + i * 0.5 + stroke.birthTime * 0.01) * wiggleAmp;
+                                    p.x += Math.cos(normalAngle) * wiggleOffset; p.y += Math.sin(normalAngle) * wiggleOffset;
+                                }
+                                if (i === 0) targetCtx.moveTo(p.x, p.y); else targetCtx.lineTo(p.x, p.y);
+                            }
+                            targetCtx.strokeStyle = stroke.color;
+                            targetCtx.lineWidth = currentDynamicSize;
+                            targetCtx.lineCap = 'round'; targetCtx.lineJoin = 'round'; 
+                            targetCtx.stroke();
+                        }
+                    }
+                    targetCtx.restore(); 
+                });
+                targetCtx.restore(); 
+            });
         }
-
 
         function animate() { time += 1; drawScene(); animationFrameId = requestAnimationFrame(animate); }
         
@@ -1053,15 +788,13 @@
                             layers = data.layers.map(loadedLayer => {
                                 const defaultAnim = {};
                                 for (const key in animationSliders) defaultAnim[key] = parseFloat(animationSliders[key].slider.defaultValue || 0);
-                                return {
-                                    id: loadedLayer.id || generateLayerId(), name: loadedLayer.name || 'Loaded Layer',
-                                    strokes: loadedLayer.strokes || [],
-                                    animationSettings: { ...defaultAnim, ...(loadedLayer.animationSettings || {}) }, 
-                                    isVisible: loadedLayer.isVisible !== undefined ? loadedLayer.isVisible : true,
-                                    opacity: loadedLayer.opacity !== undefined ? loadedLayer.opacity : 1, isActive: false,
-                                    blendMode: loadedLayer.blendMode || 'source-over',
-                                    isClippingMask: loadedLayer.isClippingMask || false
-                                };
+                                return createNewLayer( // Use createNewLayer to ensure all properties are set correctly
+                                    loadedLayer.name || 'Loaded Layer',
+                                    loadedLayer.strokes || [],
+                                    { ...defaultAnim, ...(loadedLayer.animationSettings || {}) },
+                                    loadedLayer.isVisible !== undefined ? loadedLayer.isVisible : true,
+                                    loadedLayer.opacity !== undefined ? loadedLayer.opacity : 1
+                                );
                             });
                             if (data.activeLayerId && layers.find(l => l.id === data.activeLayerId)) activeLayerId = data.activeLayerId;
                             else if (layers.length > 0) activeLayerId = layers[layers.length - 1].id;
@@ -1091,24 +824,210 @@
             } else { showModal("Unsupported File", "Please load a .drz or .svg file."); loadInput.value = ''; }
         });
 
-        function parseAndAddSVG(svgString) { /* ... SVG parsing logic (unchanged) ... */ }
-        async function initializeFFmpeg() { /* ... FFmpeg init (unchanged) ... */ }
-        async function checkAndLoadFFmpeg() { /* ... FFmpeg check (unchanged) ... */ return true; } // Simplified for brevity
-        exportMp4Btn.addEventListener('click', async () => { /* ... MP4 export (unchanged) ... */ });
-        exportGifBtn.addEventListener('click', async () => { /* ... GIF export (unchanged) ... */ });
+        function parseAndAddSVG(svgString) {
+            const activeLayer = getActiveLayer();
+            if (!activeLayer) {
+                showModal("SVG Import Error", "No active layer to import SVG content into. Please add or select a layer.");
+                return;
+            }
+            saveStateForUndo();
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
+            const svgElement = svgDoc.documentElement;
+            let vbX=0, vbY=0, vbW=parseFloat(svgElement.getAttribute('width')), vbH=parseFloat(svgElement.getAttribute('height'));
+            const viewBox = svgElement.getAttribute('viewBox');
+            if (viewBox) {
+                const parts = viewBox.split(/[\s,]+/);
+                vbX = parseFloat(parts[0]) || 0; vbY = parseFloat(parts[1]) || 0;
+                vbW = parseFloat(parts[2]) || vbW; vbH = parseFloat(parts[3]) || vbH;
+            }
+            const scaleX = WORLD_WIDTH / vbW; const scaleY = WORLD_HEIGHT / vbH;
+            const globalScale = Math.min(scaleX, scaleY) * 0.9; 
+            function transformPoint(x, y) {
+                return {
+                    x: (x - vbX) * globalScale + (WORLD_WIDTH - vbW * globalScale) / 2,
+                    y: (y - vbY) * globalScale + (WORLD_HEIGHT - vbH * globalScale) / 2
+                };
+            }
+            let importedStrokesCount = 0;
+            function parsePathD(d) {
+                const points = []; if (!d) return points;
+                const commands = d.match(/[a-zA-Z][^a-zA-Z]*/g) || [];
+                let currentX = 0, currentY = 0; let subPathStart = null;
+                commands.forEach(cmdStr => {
+                    const type = cmdStr[0];
+                    const args = (cmdStr.substring(1).match(/-?\d*\.?\d+/g) || []).map(parseFloat);
+                    if (type === 'M') { 
+                        currentX = args[0]; currentY = args[1]; points.push(transformPoint(currentX, currentY));
+                        subPathStart = {x: currentX, y: currentY};
+                        for (let i = 2; i < args.length; i += 2) { currentX = args[i]; currentY = args[i+1]; points.push(transformPoint(currentX, currentY)); }
+                    } else if (type === 'L') { 
+                         for (let i = 0; i < args.length; i += 2) { currentX = args[i]; currentY = args[i+1]; points.push(transformPoint(currentX, currentY)); }
+                    } else if (type === 'Z' || type === 'z') { 
+                        if (subPathStart && points.length > 0) {
+                            const lastPoint = points[points.length-1];
+                            const firstTransformed = transformPoint(subPathStart.x, subPathStart.y);
+                            if(Math.abs(lastPoint.x - firstTransformed.x) > 0.1 || Math.abs(lastPoint.y - firstTransformed.y) > 0.1) { points.push(firstTransformed); }
+                        }
+                        subPathStart = null; 
+                    }
+                });
+                return points;
+            }
+            svgDoc.querySelectorAll('path, line, rect, circle, ellipse, polyline, polygon').forEach(el => {
+                let points = [];
+                const strokeColor = el.getAttribute('stroke') || currentStrokeColor;
+                let strokeWidth = parseFloat(el.getAttribute('stroke-width')) || currentStrokeSize;
+                if (isNaN(strokeWidth) || strokeWidth <= 0) strokeWidth = currentStrokeSize;
+                const tagName = el.tagName.toLowerCase();
+                if (tagName === 'path') { points = parsePathD(el.getAttribute('d')); } 
+                else if (tagName === 'line') { points.push(transformPoint(parseFloat(el.getAttribute('x1')), parseFloat(el.getAttribute('y1')))); points.push(transformPoint(parseFloat(el.getAttribute('x2')), parseFloat(el.getAttribute('y2')))); } 
+                else if (tagName === 'rect') { const x = parseFloat(el.getAttribute('x')); const y = parseFloat(el.getAttribute('y')); const w = parseFloat(el.getAttribute('width')); const h = parseFloat(el.getAttribute('height')); points.push(transformPoint(x, y)); points.push(transformPoint(x + w, y)); points.push(transformPoint(x + w, y + h)); points.push(transformPoint(x, y + h)); points.push(transformPoint(x, y)); } 
+                else if (tagName === 'circle') { const cx = parseFloat(el.getAttribute('cx')); const cy = parseFloat(el.getAttribute('cy')); const r = parseFloat(el.getAttribute('r')); for (let i = 0; i <= 360; i += 15) { const angle = i * Math.PI / 180; points.push(transformPoint(cx + r * Math.cos(angle), cy + r * Math.sin(angle))); } } 
+                else if (tagName === 'ellipse') { const cx = parseFloat(el.getAttribute('cx')); const cy = parseFloat(el.getAttribute('cy')); const rx = parseFloat(el.getAttribute('rx')); const ry = parseFloat(el.getAttribute('ry')); for (let i = 0; i <= 360; i += 15) { const angle = i * Math.PI / 180; points.push(transformPoint(cx + rx * Math.cos(angle), cy + ry * Math.sin(angle))); } } 
+                else if (tagName === 'polyline' || tagName === 'polygon') { const ptsStr = el.getAttribute('points').split(/[\s,]+/); for (let i = 0; i < ptsStr.length; i += 2) { points.push(transformPoint(parseFloat(ptsStr[i]), parseFloat(ptsStr[i+1]))); } if (tagName === 'polygon' && points.length > 0) { points.push({...points[0]}); } }
+                if (points.length > 0) {
+                    activeLayer.strokes.push({ id: generateLayerId(), points: points, color: strokeColor, size: strokeWidth, tool: 'pen', originalSize: strokeWidth, birthTime: time });
+                    importedStrokesCount++;
+                }
+            });
+            if (importedStrokesCount > 0) drawScene();
+            console.log(`Imported ${importedStrokesCount} shapes/paths from SVG.`);
+        }
         
-        // --- (The rest of parseAndAddSVG, FFmpeg, export functions are long and mostly unchanged, so omitted for brevity here but are in the full code) ---
-        // Make sure to copy the full SVG parsing, FFmpeg, and export functions from the previous version if running this.
-        // For this example, I'll stub them to keep focus on layer features.
-        function parseAndAddSVG(svgString) { console.log("SVG parsing called but stubbed for this example."); }
-        // async function initializeFFmpeg() { console.log("FFmpeg init stubbed."); } // Already defined
-        // async function checkAndLoadFFmpeg() { console.log("FFmpeg check stubbed."); return true; } // Already defined
-        exportMp4Btn.addEventListener('click', async () => { showModal("Export MP4", "MP4 export function called (stubbed for this example)."); });
-        exportGifBtn.addEventListener('click', async () => { showModal("Export GIF", "GIF export function called (stubbed for this example)."); });
+        async function initializeFFmpeg() {
+            if (!ffmpeg) { 
+                 ffmpeg = createFFmpeg({ log: true, corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js' });
+            }
+            if (!ffmpeg.isLoaded()) {
+                loadingText.textContent = "Loading FFmpeg library (~30MB)...";
+                loadingIndicator.classList.remove('hidden'); 
+                await ffmpeg.load();
+            }
+        }
 
+       async function checkAndLoadFFmpeg() {
+            if (typeof SharedArrayBuffer === 'undefined') {
+                let sabMessage = "<p>MP4 export uses FFmpeg.wasm, which requires <code>SharedArrayBuffer</code>.</p>" +
+                                 "<p>This feature is often disabled by browsers unless the page is served with specific HTTP headers (COOP & COEP).</p>";
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    sabMessage += "<p>A Service Worker is active, which attempts to set these headers. If <code>SharedArrayBuffer</code> is still unavailable, please try **reloading the page** (sometimes a hard refresh: Ctrl+Shift+R or Cmd+Shift+R is needed). If the issue persists, your hosting environment or browser settings might be preventing it.</p>";
+                } else if ('serviceWorker' in navigator) {
+                    sabMessage += "<p>A Service Worker is attempting to register to enable this. This might be its first activation. Please **reload the page** and try exporting again. If MP4 export still fails, the Service Worker might not have activated correctly or your environment has restrictions.</p>";
+                } else {
+                    sabMessage += "<p>Your browser does not support Service Workers, or support is disabled. Service Workers are used here to attempt to set the required headers on this hosting platform.</p>";
+                }
+                sabMessage += "<p>For MP4 export to work, the page needs to be served with:<br>" +
+                              "<code>Cross-Origin-Opener-Policy: same-origin</code><br>" +
+                              "<code>Cross-Origin-Embedder-Policy: require-corp</code></p>";
+                showModal("MP4 Export Prerequisite Missing", sabMessage);
+                return false;
+            }
+            try { await initializeFFmpeg(); } 
+            catch (err) { console.error("FFmpeg load error:", err); showModal("FFmpeg Load Error", "Failed to load FFmpeg components. MP4 export is unavailable. Error: " + err.message); loadingIndicator.classList.add('hidden'); return false; }
+            return true;
+        }
+
+        exportMp4Btn.addEventListener('click', async () => { 
+            if (layers.every(l => !l.isVisible || l.strokes.length === 0)) { showModal("Export Error", "No visible content to export."); return; }
+            const ffmpegReady = await checkAndLoadFFmpeg();
+            if (!ffmpegReady) { loadingIndicator.classList.add('hidden'); return; }
+            const globalExportAnimSpeedFactor = parseFloat(animationSliders.animationSpeed.slider.value);
+            if (globalExportAnimSpeedFactor <= 0) { showModal("Export Warning", "Global Animation Speed is zero or less. The exported video will not show animation."); }
+            loadingIndicator.classList.remove('hidden'); loadingText.textContent = "Preparing video export...";
+            const frameRate = 30; const durationSeconds = 15; const totalFrames = frameRate * durationSeconds;
+            const liveAnimationTimeAtStart = time; let exportRenderTime = liveAnimationTimeAtStart; 
+            const timeStepPerVideoFrame = globalExportAnimSpeedFactor * (60 / frameRate);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId); 
+            let currentFrame = 0; const frameFileNames = [];
+            canvas.width = EXPORT_WIDTH; canvas.height = EXPORT_HEIGHT;
+            async function renderAndSaveFrame() {
+                if (currentFrame >= totalFrames) { await compileVideo(); return; }
+                loadingText.textContent = `Rendering frame ${currentFrame + 1} of ${totalFrames}...`;
+                if(canvas.width !== EXPORT_WIDTH || canvas.height !== EXPORT_HEIGHT) { canvas.width = EXPORT_WIDTH; canvas.height = EXPORT_HEIGHT; }
+                drawScene(true, exportRenderTime); 
+                const frameName = `frame${String(currentFrame).padStart(4, '0')}.png`; frameFileNames.push(frameName);
+                try {
+                    const dataUrl = canvas.toDataURL('image/png');
+                    const blob = await (await fetch(dataUrl)).blob();
+                    const arrayBuffer = await blob.arrayBuffer();
+                    ffmpeg.FS('writeFile', frameName, new Uint8Array(arrayBuffer));
+                } catch (frameError) {
+                    console.error(`Error processing frame ${frameName}:`, frameError); showModal("Frame Processing Error", `Failed to process frame ${currentFrame + 1}. Export aborted.`);
+                    frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} });
+                    canvas.width = WORLD_WIDTH; canvas.height = WORLD_HEIGHT; loadingIndicator.classList.add('hidden');
+                    time = liveAnimationTimeAtStart; animate(); return;
+                }
+                exportRenderTime += timeStepPerVideoFrame; currentFrame++; setTimeout(renderAndSaveFrame, 1); 
+            }
+            async function compileVideo() {
+                loadingText.textContent = "Encoding MP4... This may take a while.";
+                try {
+                    await ffmpeg.run('-r', String(frameRate), '-i', 'frame%04d.png', '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', 'output.mp4');
+                    const data = ffmpeg.FS('readFile', 'output.mp4');
+                    const blob = new Blob([data.buffer], { type: 'video/mp4' }); const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url;
+                    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-'); 
+                    a.download = `drawerz_animation_${timestamp}.mp4`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                    showModal("Export Complete", "Animation exported as MP4!");
+                } catch (error) { console.error("FFmpeg run error:", error); showModal("FFmpeg Export Error", "Error during video encoding: " + error.message);
+                } finally {
+                    frameFileNames.forEach(name => { try { ffmpeg.FS('unlink', name); } catch(e){} });
+                    try { ffmpeg.FS('unlink', 'output.mp4'); } catch(e){}
+                    canvas.width = WORLD_WIDTH; canvas.height = WORLD_HEIGHT;
+                    loadingIndicator.classList.add('hidden'); time = liveAnimationTimeAtStart; animate(); 
+                }
+            }
+            renderAndSaveFrame(); 
+        });
+
+        exportGifBtn.addEventListener('click', async () => {
+            if (layers.every(l => !l.isVisible || l.strokes.length === 0)) { showModal("Export Error", "No visible content to export."); return; }
+            loadingIndicator.classList.remove('hidden'); loadingText.textContent = "Preparing GIF export...";
+            const frameRate = 10; const durationSeconds = 15; const totalFrames = frameRate * durationSeconds; const delay = 1000 / frameRate; 
+            const liveAnimationTimeAtStart = time; let exportRenderTime = liveAnimationTimeAtStart;
+            const globalExportAnimSpeedFactor = parseFloat(animationSliders.animationSpeed.slider.value);
+             if (globalExportAnimSpeedFactor <= 0) { showModal("Export Warning", "Global Animation Speed is zero or less. The exported GIF will not be animated."); }
+            const timeStepPerVideoFrame = globalExportAnimSpeedFactor * (60 / frameRate);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            const gif = new GIF({ workers: 2, quality: 10, workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js', width: EXPORT_WIDTH, height: EXPORT_HEIGHT, background: '#FFF', transparent: null });
+            canvas.width = EXPORT_WIDTH; canvas.height = EXPORT_HEIGHT;
+            let currentFrame = 0;
+            function addGifFrame() {
+                if (currentFrame >= totalFrames) { gif.render(); return; }
+                loadingText.textContent = `Rendering GIF frame ${currentFrame + 1} of ${totalFrames}...`;
+                if(canvas.width !== EXPORT_WIDTH || canvas.height !== EXPORT_HEIGHT) { canvas.width = EXPORT_WIDTH; canvas.height = EXPORT_HEIGHT; }
+                drawScene(true, exportRenderTime);
+                gif.addFrame(canvas, { copy: true, delay: delay });
+                exportRenderTime += timeStepPerVideoFrame; currentFrame++; setTimeout(addGifFrame, 10); 
+            }
+            gif.on('finished', function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url;
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                a.download = `drawerz_animation_${timestamp}.gif`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                canvas.width = WORLD_WIDTH; canvas.height = WORLD_HEIGHT;
+                loadingIndicator.classList.add('hidden');
+                showModal("Export Complete", "Animation exported as GIF!");
+                time = liveAnimationTimeAtStart; animate();
+            });
+            gif.on('progress', function(p) { loadingText.textContent = `Encoding GIF: ${Math.round(p * 100)}%`; });
+            addGifFrame();
+        });
 
         function initializeApp() {
-            if ('serviceWorker' in navigator) { /* ... Service Worker (unchanged) ... */ }
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js', { scope: './' }) 
+                    .then(registration => {
+                        console.log('Drawerz Service Worker: Registered with scope:', registration.scope);
+                    }).catch(error => {
+                        console.error('Drawerz Service Worker: Registration failed:', error);
+                    });
+                });
+            }
             loadingIndicator.classList.add('hidden'); messageModal.classList.add('hidden');
             setActiveToolButton(penToolBtn); 
             strokeSizeValue.textContent = strokeSizeSlider.value;
@@ -1119,12 +1038,12 @@
             updateUndoRedoButtons(); 
             animate(); 
             updateCanvasCursor();
-            updateMergeDownButtonState(); // Initial state for merge button
         }
+
         addLayerBtn.addEventListener('click', addLayer);
         document.addEventListener('keydown', function(e) {
             const activeEl = document.activeElement;
-            const isInputFocused = (activeEl && (activeEl.tagName.toLowerCase() === 'input' && activeEl.type !== 'range' && activeEl.type !== 'button' && activeEl.type !== 'submit') || activeEl.tagName.toLowerCase() === 'textarea' || activeEl.tagName.toLowerCase() === 'select');
+            const isInputFocused = (activeEl && (activeEl.tagName.toLowerCase() === 'input' && activeEl.type !== 'range') || activeEl.tagName.toLowerCase() === 'textarea');
             if (isInputFocused) return; 
             let prevented = true; 
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') saveBtn.click();
