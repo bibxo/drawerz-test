@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawerz Beta 3 - Animated Sketchpad & Layering Tool</title>
+
+    <link rel="icon" type="image/png" href="icon-logo.png">
+
+    <meta name="description" content="Drawerz Beta 3: A creative web application for drawing, animating strokes with layers, and exporting your artwork as MP4 or GIF. Features include dynamic brushes, layer management, and various animation effects.">
+    <meta name="keywords" content="drawing app, animation tool, vector graphics, layers, sketchpad, online drawing, html5 canvas, javascript animation, export mp4, export gif, Drawerz">
+    <meta name="author" content="Bixrail & Your Name/Studio">
+    <link rel="canonical" href="https://your-drawerz-beta-3-url.com/">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="Drawerz Beta 3 - Animated Sketchpad">
+    <meta property="og:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-drawerz-beta-3-url.com/">
+    <meta property="og:image" content="chat-logo.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Drawerz Beta 3">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Drawerz Beta 3 - Animated Sketchpad">
+    <meta name="twitter:description" content="Create and animate drawings with layers. Export to MP4 or GIF.">
+    <meta name="twitter:image" content="chat-logo.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+</head>
+<body class="bg-gray-900 text-white flex flex-col h-screen overflow-hidden">
+    <header class="header">
+        <a href="#" class="header-logo-link">
+            <img src="head-logo.png" alt="Drawerz Beta 3 Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/200x40/3B82F6/FFFFFF?text=Drawerz&font=montserrat';">
+        </a>
+        <div class="header-buttons">
+            <button id="saveBtn" class="btn" title="Save (Ctrl + S)"><i class="fas fa-save"></i> <span>Save</span></button>
+            <label for="loadInput" class="btn" title="Load (Ctrl + O)"><i class="fas fa-folder-open"></i> <span>Load</span></label>
+            <input type="file" id="loadInput" accept=".drz,.svg,.psd,.clip">
+            <button id="exportMp4Btn" class="btn btn-primary" title="Export MP4 (Ctrl + E)"><i class="fas fa-file-video"></i> <span>Export MP4</span></button>
+            <button id="exportGifBtn" class="btn btn-primary" title="Export GIF"><i class="fas fa-file-image"></i> <span>Export GIF</span></button>
+            <button id="clearActiveLayerBtn" class="btn btn-danger" title="Clear Active Layer"><i class="fas fa-eraser"></i> <span>Clear Layer</span></button>
+            <button id="clearAllLayersBtn" class="btn btn-danger" title="Clear All Layers (Ctrl + Shift + Delete)"><i class="fas fa-bomb"></i> <span>Clear All</span></button>
+            <button id="undoBtn" class="btn" title="Undo (Ctrl + Z)"><i class="fas fa-undo"></i></button>
+            <button id="redoBtn" class="btn" title="Redo (Ctrl + Y)"><i class="fas fa-redo"></i></button>
+        </div>
+        <button id="controlPanelToggle" class="control-panel-toggle"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <div class="main-content">
+        <div id="canvasContainer" class="canvas-container">
+            <canvas id="drawingCanvas"></canvas>
+        </div>
+
+        <aside id="controlPanel" class="control-panel">
+            <div class="section">
+                <h2 class="section-title">Drawing Tools</h2>
+                <div class="tools-grid">
+                    <button id="penTool" class="btn active-tool" title="Pen Tool (P)"><i class="fas fa-pen"></i> Pen</button>
+                    <button id="eraserTool" class="btn" title="Eraser Tool (E)"><i class="fas fa-eraser"></i> Eraser</button>
+                </div>
+                <div class="form-group">
+                    <label for="strokeSize" class="form-label">Stroke Size: <span id="strokeSizeValue">10</span>px</label>
+                    <input type="range" id="strokeSize" min="1" max="100" value="10">
+                </div>
+                <div class="form-group">
+                    <label for="strokeColor" class="form-label">Stroke Color</label>
+                    <input type="color" id="strokeColor" value="#000000">
+                </div>
+            </div>
+            
+            <div class="section" id="layersSection">
+                <h2 class="section-title">Layers</h2>
+                <div id="layersList" class="layers-list"></div>
+                <div class="layer-actions">
+                    <button id="addLayerBtn" class="btn btn-primary" title="Add New Layer"><i class="fas fa-plus-circle"></i> Add Layer</button>
+                </div>
+                <div id="selectedLayerOpacityControl" class="form-group hidden layer-opacity-control">
+                    <label for="layerOpacity" class="form-label">Layer Opacity: <span id="layerOpacityValue">100</span>%</label>
+                    <input type="range" id="layerOpacity" min="0" max="100" value="100">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Animation Effects (Active Layer)</h2>
+                <div class="form-group">
+                    <label for="wiggleIntensity" class="form-label">Wiggle Intensity: <span id="wiggleIntensityValue">0</span></label>
+                    <input type="range" id="wiggleIntensity" min="0" max="20" value="0" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="breathingStroke" class="form-label">Breathing Stroke: <span id="breathingStrokeValue">0</span></label>
+                    <input type="range" id="breathingStroke" min="0" max="20" value="0" step="1">
+                </div>
+                <div class="form-group">
+                    <label for="shakeIntensity" class="form-label">Shake Intensity: <span id="shakeIntensityValue">0</span></label>
+                    <input type="range" id="shakeIntensity" min="0" max="10" value="0" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="animationSpeed" class="form-label">Animation Speed: <span id="animationSpeedValue">1</span>x</label>
+                    <input type="range" id="animationSpeed" min="0.1" max="5" value="1" step="0.1">
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div id="messageModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modalTitle" class="modal-title">Notification</h2>
+            <p id="modalMessage" class="modal-message">This is a message.</p>
+            <div class="modal-button-container">
+                <button id="modalCloseBtn" class="btn modal-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingIndicator" class="loadingIndicator hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <span id="loadingText">Loading...</span>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        Created by Bixrail
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
